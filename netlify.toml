@@ -1,0 +1,50 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+# Functions directory
+[functions]
+  directory = "netlify/functions"
+
+# Form handling
+[form]
+  spam_filter = true
+
+# Security headers for admin routes
+[[redirects]]
+  from = "/admin"
+  to = "/admin/"
+  status = 301
+
+# Prevent access to sensitive files
+[[redirects]]
+  from = "/.env*"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/data/*"
+  to = "/404"
+  status = 404
+  force = true
