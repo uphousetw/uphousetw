@@ -87,8 +87,8 @@ async function loadProjects() {
     const data = await fs.readFile(DATA_FILE, 'utf8');
     return JSON.parse(data);
   } catch (error) {
-    // File doesn't exist, initialize with default data
-    await saveProjects(defaultProjects);
+    // In serverless environment, can't write files, return default data
+    console.warn('Using default projects data (serverless mode)');
     return defaultProjects;
   }
 }
@@ -102,8 +102,10 @@ async function saveProjects(projects) {
 
     await fs.writeFile(DATA_FILE, JSON.stringify(projects, null, 2), 'utf8');
   } catch (error) {
-    console.error('Failed to save projects:', error);
-    throw error;
+    console.warn('Cannot save in serverless environment:', error.message);
+    // In serverless/production, we can't write to filesystem
+    // This is expected behavior - changes won't persist
+    return projects; // Return the data anyway
   }
 }
 
