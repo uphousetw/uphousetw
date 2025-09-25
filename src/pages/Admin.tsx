@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { apiService } from '../services/mockApi';
 import {
   Building2,
   Users,
@@ -508,18 +509,13 @@ function AdminProjects({ user }: { user: User }) {
         return;
       }
 
-      const response = await fetch('/.netlify/functions/projects', {
+      const data = await apiService.makeRequest('/.netlify/functions/projects', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
       setProjects(data.projects || []);
     } catch (error) {
       console.error('Failed to fetch projects:', error);
@@ -719,18 +715,12 @@ function AdminAbout({ user }: { user: User }) {
         return;
       }
 
-      const response = await fetch('/.netlify/functions/about', {
+      const data = await apiService.makeRequest('/.netlify/functions/about', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
       setFormData({
         title: data.about.title || '',
         intro: data.about.intro || '',
@@ -1024,18 +1014,12 @@ function AdminContacts({ user }: { user: User }) {
         return;
       }
 
-      const response = await fetch('/.netlify/functions/contacts', {
+      const data = await apiService.makeRequest('/.netlify/functions/contacts', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
       setContacts(data.contacts || []);
     } catch (error) {
       console.error('Failed to fetch contacts:', error);
