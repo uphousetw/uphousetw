@@ -33,6 +33,10 @@ export default function Admin() {
     if (token) {
       // In a real app, you would verify this token with the server
       setUser({ email: 'admin@example.com', role: 'admin' });
+    } else if (import.meta.env.DEV) {
+      // For development environment, set demo token
+      localStorage.setItem('admin_token', 'demo-token');
+      setUser({ email: 'demo@uphousetw.com', role: 'admin' });
     }
     setLoading(false);
   }, []);
