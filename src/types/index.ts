@@ -18,7 +18,13 @@ export interface Project {
 export interface AboutUs {
   title: string;
   intro: string;
-  principles: string[];
+  mission?: string;
+  vision?: string;
+  principles: (string | {
+    icon?: string;
+    title: string;
+    description: string;
+  })[];
   milestones: {
     year: number;
     event: string;

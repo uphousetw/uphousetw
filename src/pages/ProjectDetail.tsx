@@ -36,23 +36,9 @@ export default function ProjectDetail() {
           year: apiProject.year,
           location: apiProject.location,
           summary: apiProject.summary,
-          description: apiProject.description || apiProject.summary,
           body: apiProject.description || apiProject.summary,
           coverUrl: apiProject.coverUrl,
-          images: apiProject.images || [apiProject.coverUrl],
-          facts: apiProject.facts,
-          timeline: [
-            { year: apiProject.year, event: '專案開始' },
-            { year: apiProject.year, event: '完工交付' }
-          ],
-          challenges: [
-            '確保施工品質與進度',
-            '滿足客戶需求與預算控制'
-          ],
-          solutions: [
-            '採用標準化施工流程',
-            '定期與客戶溝通確認'
-          ]
+          facts: apiProject.facts
         };
 
         setProject(formattedProject);

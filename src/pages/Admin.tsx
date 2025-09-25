@@ -688,11 +688,17 @@ function AdminProjects({ user }: { user: User }) {
 }
 
 function AdminAbout({ user }: { user: User }) {
-  const [aboutData, setAboutData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    intro: string;
+    mission: string;
+    vision: string;
+    principles: { icon?: string; title: string; description: string; }[];
+    milestones: { year: string; event: string; }[];
+  }>({
     title: '',
     intro: '',
     mission: '',
@@ -721,7 +727,6 @@ function AdminAbout({ user }: { user: User }) {
       }
 
       const data = await response.json();
-      setAboutData(data.about);
       setFormData({
         title: data.about.title || '',
         intro: data.about.intro || '',
@@ -759,8 +764,7 @@ function AdminAbout({ user }: { user: User }) {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      const data = await response.json();
-      setAboutData(data.about);
+      await response.json();
       alert('資料更新成功！');
     } catch (error) {
       console.error('Failed to update about data:', error);
