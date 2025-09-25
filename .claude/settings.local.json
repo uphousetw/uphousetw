@@ -18,7 +18,12 @@
       "Bash(git branch:*)",
       "Bash(git push:*)",
       "Bash(git config:*)",
-      "Bash(dir)"
+      "Bash(dir)",
+      "Bash(findstr:*)",
+      "Bash(cmdkey:*)",
+      "Bash(git credential-manager-core:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(npx netlify dev:*)"
     ],
     "deny": [],
     "ask": []

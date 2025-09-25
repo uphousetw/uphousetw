@@ -136,21 +136,6 @@ export default function Contact() {
                 聯絡表單
               </h2>
 
-              {/* Success Message */}
-              {showSuccess && (
-                <motion.div
-                  className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    感謝您的來信！我們會盡快與您聯絡。
-                  </div>
-                </motion.div>
-              )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name */}
@@ -251,6 +236,26 @@ export default function Contact() {
                     </span>
                   ) : '送出訊息'}
                 </button>
+
+                {/* Success Message */}
+                {showSuccess && (
+                  <motion.div
+                    className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mt-4"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <div>
+                        <p className="font-medium">感謝您的來信！</p>
+                        <p className="text-sm text-green-700">我們會盡快與您聯絡，通常在 24 小時內回覆。</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
               </form>
             </div>
           </motion.div>

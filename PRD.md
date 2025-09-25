@@ -55,8 +55,12 @@
 
 ### 2.2 後台（/admin）
 - **登入**
-  - Google OAuth（白名單 Email）  
-  - Email Magic Link  
+  - Google OAuth（白名單 Email）✅ **已實作**
+    - 支援 Google 帳號登入
+    - 管理員 Email 白名單驗證
+    - JWT Token 認證機制
+    - 自動重新導向流程
+  - Email Magic Link ⚠️ **基礎架構完成**  
 
 - **內容管理**
   - 專案管理（新增／編輯／刪除）  
@@ -125,7 +129,12 @@ Serverless Functions（Netlify 或等效平台）
 
 模組：
 
-Auth（Google OAuth、Email Magic Link）
+Auth（Google OAuth ✅ 已實作、Email Magic Link ⚠️ 基礎架構）
+  - `/.netlify/functions/auth` - 主要認證端點
+  - `/.netlify/functions/auth-callback` - Google OAuth 回調處理
+  - 使用 google-auth-library 套件
+  - JWT Token 產生與驗證
+  - 管理員白名單檢查
 
 Content CRUD（專案／關於我們 JSON）
 
@@ -152,6 +161,33 @@ JWT 存於 HttpOnly Cookie
 上傳限制檔案大小／格式（僅圖片）
 
 不將 PII（如電話、email）傳送至 GA4
+
+## 📋 Google OAuth 設定需求
+
+### 環境變數
+以下環境變數需要在 Netlify 和本地開發環境中設定：
+
+```env
+# Google OAuth 認證
+GOOGLE_CLIENT_ID=your-google-client-id.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# 管理員白名單（必填）
+ADMIN_EMAILS=admin@company.com,manager@company.com
+
+# JWT 密鑰
+JWT_SECRET=your-secure-jwt-secret
+```
+
+### Google Cloud Console 設定
+1. 建立 Google Cloud 專案
+2. 啟用 Google+ API 和 People API
+3. 建立 OAuth 2.0 憑證
+4. 設定授權重新導向 URI：
+   - 開發：`http://localhost:5173/.netlify/functions/auth-callback`
+   - 生產：`https://your-domain.com/.netlify/functions/auth-callback`
+
+詳細設定說明請參考 `GOOGLE_OAUTH_SETUP.md`
 
 5. 後台 GA4 事件規格
 

@@ -12,60 +12,44 @@ export default function Projects() {
   const [sortBy, setSortBy] = useState<'latest' | 'completed'>('latest');
 
   useEffect(() => {
-    // Mock data - in real app, this would fetch from API
-    const mockProjects: Project[] = [
-      defaultProject,
-      {
-        ...defaultProject,
-        slug: 'luxury-apartment-2024',
-        title: '豪華電梯大樓',
-        category: '電梯大樓',
-        year: 2024,
-        location: '台北市信義區',
-        summary: '現代化電梯大樓，提供舒適的居住環境。',
-        coverUrl: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facts: {
-          地點: '台北市信義區',
-          類別: '電梯大樓',
-          年份: '2024',
-          完工日: '2024-12-31'
+    // Fetch projects from API
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('/.netlify/functions/projects-public');
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
-      },
-      {
-        ...defaultProject,
-        slug: 'modern-townhouse-2023',
-        title: '現代透天別墅',
-        category: '透天',
-        year: 2023,
-        location: '新北市板橋區',
-        summary: '設計精美的現代透天別墅，注重空間利用。',
-        coverUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facts: {
-          地點: '新北市板橋區',
-          類別: '透天',
-          年份: '2023',
-          完工日: '2023-10-15'
-        }
-      },
-      {
-        ...defaultProject,
-        slug: 'garden-mansion-2024',
-        title: '花園華廈',
-        category: '華廈',
-        year: 2024,
-        location: '桃園市中壢區',
-        summary: '結合自然景觀的花園華廈建案。',
-        coverUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facts: {
-          地點: '桃園市中壢區',
-          類別: '華廈',
-          年份: '2024',
-          完工日: '2024-08-30'
-        }
+        const data = await response.json();
+        const apiProjects = data.projects || [];
+
+        // Convert API data to Project format
+        const formattedProjects: Project[] = apiProjects.map((project: any) => ({
+          slug: project.slug,
+          title: project.title,
+          category: project.category,
+          year: project.year,
+          location: project.location,
+          summary: project.summary,
+          description: project.description || project.summary,
+          coverUrl: project.coverUrl,
+          images: project.images || [project.coverUrl],
+          facts: project.facts,
+          timeline: [],
+          challenges: [],
+          solutions: []
+        }));
+
+        setProjects(formattedProjects);
+        setFilteredProjects(formattedProjects);
+      } catch (error) {
+        console.error('Failed to fetch projects:', error);
+        // Fallback to default project if API fails
+        setProjects([defaultProject]);
+        setFilteredProjects([defaultProject]);
       }
-    ];
-    setProjects(mockProjects);
-    setFilteredProjects(mockProjects);
+    };
+
+    fetchProjects();
   }, []);
 
   useEffect(() => {

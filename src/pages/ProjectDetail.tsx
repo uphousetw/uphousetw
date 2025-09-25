@@ -10,12 +10,57 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock API call - in real app, this would fetch from API
+    // Fetch project from API
     const fetchProject = async () => {
+      if (!slug) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
 
-      // Mock different projects based on slug
-      const mockProjects: Record<string, Project> = {
+      try {
+        const response = await fetch(`/.netlify/functions/projects-public/${slug}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const apiProject = data.project;
+
+        // Convert API data to Project format
+        const formattedProject: Project = {
+          slug: apiProject.slug,
+          title: apiProject.title,
+          category: apiProject.category,
+          year: apiProject.year,
+          location: apiProject.location,
+          summary: apiProject.summary,
+          description: apiProject.description || apiProject.summary,
+          body: apiProject.description || apiProject.summary,
+          coverUrl: apiProject.coverUrl,
+          images: apiProject.images || [apiProject.coverUrl],
+          facts: apiProject.facts,
+          timeline: [
+            { year: apiProject.year, event: '專案開始' },
+            { year: apiProject.year, event: '完工交付' }
+          ],
+          challenges: [
+            '確保施工品質與進度',
+            '滿足客戶需求與預算控制'
+          ],
+          solutions: [
+            '採用標準化施工流程',
+            '定期與客戶溝通確認'
+          ]
+        };
+
+        setProject(formattedProject);
+      } catch (error) {
+        console.error('Failed to fetch project:', error);
+
+        // Fallback to mock projects based on slug
+        const mockProjects: Record<string, Project> = {
         'default-project': defaultProject,
         'luxury-apartment-2024': {
           ...defaultProject,
@@ -69,12 +114,14 @@ export default function ProjectDetail() {
         }
       };
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+        // Simulate API delay for fallback
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-      const foundProject = mockProjects[slug || ''] || null;
-      setProject(foundProject);
-      setLoading(false);
+        const foundProject = mockProjects[slug || ''] || null;
+        setProject(foundProject);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchProject();

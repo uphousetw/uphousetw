@@ -1,7 +1,43 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { defaultAboutUs } from '../data/defaultData';
 
 export default function About() {
+  const [aboutData, setAboutData] = useState(defaultAboutUs);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAboutData = async () => {
+      try {
+        const response = await fetch('/.netlify/functions/about-public');
+        if (response.ok) {
+          const data = await response.json();
+          setAboutData(data.about);
+        } else {
+          console.log('Using fallback about data');
+        }
+      } catch (error) {
+        console.error('Failed to fetch about data:', error);
+        console.log('Using fallback about data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAboutData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">載入中...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,7 +49,7 @@ export default function About() {
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            {defaultAboutUs.title}
+            {aboutData.title}
           </h1>
           <div className="w-24 h-1 bg-primary-600 mx-auto"></div>
         </motion.div>
@@ -28,7 +64,7 @@ export default function About() {
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">公司簡介</h2>
           <div className="prose prose-lg max-w-none">
             <p className="text-gray-600 leading-relaxed">
-              {defaultAboutUs.intro}
+              {aboutData.intro}
             </p>
             <p className="text-gray-600 leading-relaxed mt-4">
               我們擁有經驗豐富的建築團隊和先進的施工技術，從規劃設計到施工完成，
@@ -46,7 +82,7 @@ export default function About() {
         >
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">品牌理念</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {defaultAboutUs.principles.map((principle) => (
+            {aboutData.principles.map((principle) => (
               <div
                 key={principle}
                 className="bg-white p-6 rounded-lg shadow-md border-l-4 border-primary-600"

@@ -1,4 +1,6 @@
 // Netlify serverless function for handling contact form submissions
+import { addContact } from '../data/contacts.js';
+
 export const handler = async (event, context) => {
   // Set CORS headers
   const headers = {
@@ -42,32 +44,25 @@ export const handler = async (event, context) => {
     }
 
     // Create contact message object
-    const contactMessage = {
+    const contactData = {
       name,
       phone,
       email: email || null,
       project,
-      message,
-      createdAt: new Date().toISOString(),
-      id: Date.now().toString()
+      message
     };
 
-    // In a real implementation, you would:
-    // 1. Save to database or JSON file in Git
-    // 2. Send email notification
-    // 3. Log to analytics (without PII)
+    // Save to data storage using our data layer
+    const savedContact = await addContact(contactData);
 
-    console.log('Contact form submission:', {
-      project: contactMessage.project,
-      timestamp: contactMessage.createdAt,
-      id: contactMessage.id
+    console.log('Contact form submission saved:', {
+      id: savedContact.id,
+      project: savedContact.project,
+      timestamp: savedContact.createdAt
     });
 
     // TODO: Implement email sending
-    // await sendEmailNotification(contactMessage);
-
-    // TODO: Save to data storage
-    // await saveContactMessage(contactMessage);
+    // await sendEmailNotification(savedContact);
 
     return {
       statusCode: 200,
@@ -75,7 +70,7 @@ export const handler = async (event, context) => {
       body: JSON.stringify({
         success: true,
         message: '訊息已送出，我們會盡快與您聯絡',
-        id: contactMessage.id
+        id: savedContact.id
       })
     };
 
