@@ -73,6 +73,41 @@ export default function About() {
           </div>
         </motion.section>
 
+        {/* Mission and Vision */}
+        {(aboutData.mission || aboutData.vision) && (
+          <motion.section
+            className="mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {aboutData.mission && (
+                <div className="bg-gradient-to-br from-primary-50 to-primary-100 p-8 rounded-lg">
+                  <h3 className="text-xl font-semibold text-primary-900 mb-4 flex items-center">
+                    <span className="text-2xl mr-3">🎯</span>
+                    我們的使命
+                  </h3>
+                  <p className="text-primary-800 leading-relaxed">
+                    {aboutData.mission}
+                  </p>
+                </div>
+              )}
+              {aboutData.vision && (
+                <div className="bg-gradient-to-br from-accent-50 to-accent-100 p-8 rounded-lg">
+                  <h3 className="text-xl font-semibold text-accent-900 mb-4 flex items-center">
+                    <span className="text-2xl mr-3">🌟</span>
+                    我們的願景
+                  </h3>
+                  <p className="text-accent-800 leading-relaxed">
+                    {aboutData.vision}
+                  </p>
+                </div>
+              )}
+            </div>
+          </motion.section>
+        )}
+
         {/* Brand Principles */}
         <motion.section
           className="mb-16"
@@ -82,96 +117,78 @@ export default function About() {
         >
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">品牌理念</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {aboutData.principles.map((principle) => (
+            {aboutData.principles?.map((principle, index) => (
               <div
-                key={principle}
+                key={typeof principle === 'string' ? principle : principle.title || index}
                 className="bg-white p-6 rounded-lg shadow-md border-l-4 border-primary-600"
               >
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  {principle}
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  {getPrincipleDescription(principle)}
-                </p>
+                {typeof principle === 'string' ? (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                      {principle}
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      {getPrincipleDescription(principle)}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center mb-3">
+                      <span className="text-2xl mr-3">{principle.icon || '✨'}</span>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {principle.title}
+                      </h3>
+                    </div>
+                    <p className="text-gray-600 text-sm">
+                      {principle.description}
+                    </p>
+                  </>
+                )}
               </div>
             ))}
           </div>
         </motion.section>
 
+
         {/* Milestones */}
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-        >
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">發展歷程</h2>
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-primary-200"></div>
+        {aboutData.milestones && aboutData.milestones.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">發展歷程</h2>
+            <div className="relative">
+              {/* Timeline line */}
+              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-primary-200"></div>
 
-            <div className="space-y-8">
-              {defaultAboutUs.milestones.map((milestone) => (
-                <div key={milestone.year} className="relative flex items-center">
-                  {/* Timeline dot */}
-                  <div className="absolute left-0 w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
-                  </div>
+              <div className="space-y-8">
+                {aboutData.milestones.map((milestone, index) => (
+                  <div key={index} className="relative flex items-center">
+                    {/* Timeline dot */}
+                    <div className="absolute left-0 w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
+                      <div className="w-3 h-3 bg-white rounded-full"></div>
+                    </div>
 
-                  {/* Content */}
-                  <div className="ml-16">
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                      <div className="flex items-center mb-2">
-                        <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium">
-                          {milestone.year}年
-                        </span>
+                    {/* Content */}
+                    <div className="ml-16">
+                      <div className="bg-white p-6 rounded-lg shadow-md">
+                        <div className="flex items-center mb-2">
+                          <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium">
+                            {milestone.year}年
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {milestone.event}
+                        </h3>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {milestone.event}
-                      </h3>
                     </div>
                   </div>
-                </div>
-              ))}
-
-              {/* Additional milestones */}
-              <div className="relative flex items-center">
-                <div className="absolute left-0 w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                  <div className="w-3 h-3 bg-white rounded-full"></div>
-                </div>
-                <div className="ml-16">
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex items-center mb-2">
-                      <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium">
-                        2021年
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      擴大營運規模
-                    </h3>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative flex items-center">
-                <div className="absolute left-0 w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                  <div className="w-3 h-3 bg-white rounded-full"></div>
-                </div>
-                <div className="ml-16">
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex items-center mb-2">
-                      <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium">
-                        2024年
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      獲得建築品質認證
-                    </h3>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
-          </div>
-        </motion.section>
+          </motion.section>
+        )}
       </div>
     </div>
   );

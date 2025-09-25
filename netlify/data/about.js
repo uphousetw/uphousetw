@@ -41,6 +41,24 @@ const defaultAbout = {
       label: '滿意客戶'
     }
   ],
+  milestones: [
+    {
+      year: '2015',
+      event: '昇昊營造有限公司成立'
+    },
+    {
+      year: '2018',
+      event: '完成首個大型電梯大樓專案'
+    },
+    {
+      year: '2020',
+      event: '建立專業施工團隊，擴大營運規模'
+    },
+    {
+      year: '2023',
+      event: '累計完成100個建築專案'
+    }
+  ],
   team: {
     title: '專業團隊',
     description: '我們擁有經驗豐富的建築師、工程師和施工團隊，為每個專案提供專業的技術支援。',

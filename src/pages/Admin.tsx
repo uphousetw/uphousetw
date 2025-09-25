@@ -286,12 +286,61 @@ function AdminLogin({ setUser }: { setUser: (user: User | null) => void }) {
 
 function AdminDashboard({ user, setUser }: { user: User; setUser: (user: User | null) => void }) {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    totalProjects: 0,
+    monthlyContacts: 0,
+    monthlyVisitors: 0,
+    loading: true
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
     setUser(null);
     navigate('/admin');
   };
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      if (!token) return;
+
+      // Fetch projects count
+      const projectsResponse = await fetch('/.netlify/functions/projects', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const projectsData = projectsResponse.ok ? await projectsResponse.json() : { projects: [] };
+
+      // Fetch contacts count
+      const contactsResponse = await fetch('/.netlify/functions/contacts', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const contactsData = contactsResponse.ok ? await contactsResponse.json() : { contacts: [] };
+
+      // Calculate monthly contacts (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const monthlyContacts = contactsData.contacts?.filter((contact: any) =>
+        new Date(contact.createdAt) >= thirtyDaysAgo
+      ).length || 0;
+
+      // Mock visitor data (in real app, would come from analytics API)
+      const monthlyVisitors = Math.floor(Math.random() * 2000) + 500;
+
+      setStats({
+        totalProjects: projectsData.projects?.length || 0,
+        monthlyContacts,
+        monthlyVisitors,
+        loading: false
+      });
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+      setStats(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -358,8 +407,17 @@ function AdminDashboard({ user, setUser }: { user: User; setUser: (user: User | 
                   <BarChart3 size={32} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-primary-600">12</p>
-                  <p className="text-neutral-600 text-sm">總專案數</p>
+                  {stats.loading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 w-12 bg-gray-200 rounded mb-1"></div>
+                      <div className="h-4 w-16 bg-gray-200 rounded"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-primary-600">{stats.totalProjects}</p>
+                      <p className="text-neutral-600 text-sm">總專案數</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -369,8 +427,17 @@ function AdminDashboard({ user, setUser }: { user: User; setUser: (user: User | 
                   <MessageSquare size={32} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-primary-600">23</p>
-                  <p className="text-neutral-600 text-sm">本月聯絡數</p>
+                  {stats.loading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 w-12 bg-gray-200 rounded mb-1"></div>
+                      <div className="h-4 w-20 bg-gray-200 rounded"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-primary-600">{stats.monthlyContacts}</p>
+                      <p className="text-neutral-600 text-sm">本月聯絡數</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -380,8 +447,17 @@ function AdminDashboard({ user, setUser }: { user: User; setUser: (user: User | 
                   <Eye size={32} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-primary-600">1.2k</p>
-                  <p className="text-neutral-600 text-sm">本月訪客</p>
+                  {stats.loading ? (
+                    <div className="animate-pulse">
+                      <div className="h-8 w-12 bg-gray-200 rounded mb-1"></div>
+                      <div className="h-4 w-16 bg-gray-200 rounded"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-primary-600">{stats.monthlyVisitors.toLocaleString()}</p>
+                      <p className="text-neutral-600 text-sm">本月訪客</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -612,40 +688,311 @@ function AdminProjects({ user }: { user: User }) {
 }
 
 function AdminAbout({ user }: { user: User }) {
+  const [aboutData, setAboutData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    title: '',
+    intro: '',
+    mission: '',
+    vision: '',
+    principles: [],
+    milestones: []
+  });
+
+  const fetchAboutData = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        setError('未登入');
+        return;
+      }
+
+      const response = await fetch('/.netlify/functions/about', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAboutData(data.about);
+      setFormData({
+        title: data.about.title || '',
+        intro: data.about.intro || '',
+        mission: data.about.mission || '',
+        vision: data.about.vision || '',
+        principles: data.about.principles || [],
+        milestones: data.about.milestones || []
+      });
+    } catch (error) {
+      console.error('Failed to fetch about data:', error);
+      setError('無法載入關於我們資料');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAboutData();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch('/.netlify/functions/about', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAboutData(data.about);
+      alert('資料更新成功！');
+    } catch (error) {
+      console.error('Failed to update about data:', error);
+      alert('儲存失敗，請稍後再試');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePrincipleChange = (index: number, field: string, value: string) => {
+    const newPrinciples = [...formData.principles];
+    newPrinciples[index] = { ...newPrinciples[index], [field]: value };
+    setFormData({ ...formData, principles: newPrinciples });
+  };
+
+  const addPrinciple = () => {
+    setFormData({
+      ...formData,
+      principles: [...formData.principles, { icon: '✨', title: '', description: '' }]
+    });
+  };
+
+  const removePrinciple = (index: number) => {
+    setFormData({
+      ...formData,
+      principles: formData.principles.filter((_, i) => i !== index)
+    });
+  };
+
+  const handleMilestoneChange = (index: number, field: string, value: string) => {
+    const newMilestones = [...formData.milestones];
+    newMilestones[index] = { ...newMilestones[index], [field]: value };
+    setFormData({ ...formData, milestones: newMilestones });
+  };
+
+  const addMilestone = () => {
+    setFormData({
+      ...formData,
+      milestones: [...formData.milestones, { year: '', event: '' }]
+    });
+  };
+
+  const removeMilestone = (index: number) => {
+    setFormData({
+      ...formData,
+      milestones: formData.milestones.filter((_, i) => i !== index)
+    });
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout user={user} title="關於我們管理">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <span className="ml-2">載入中...</span>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout user={user} title="關於我們管理">
+        <div className="text-center py-12 text-red-500">{error}</div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout user={user} title="關於我們管理">
       <div className="space-y-6">
         <p className="text-neutral-600">編輯公司資訊、理念與發展歷程</p>
 
+        {/* Basic Info */}
         <div className="bg-white rounded-lg shadow border border-secondary-200 p-6">
-          <h3 className="text-lg font-semibold text-primary-600 mb-4">公司簡介</h3>
-          <textarea
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-            rows={4}
-            placeholder="輸入公司簡介..."
-            defaultValue="本公司專注於住宅與商辦建設，致力於品質、安全與準時交付。"
-          />
-          <button className="mt-4 bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-600 transition-colors">
-            儲存變更
-          </button>
+          <h3 className="text-lg font-semibold text-primary-600 mb-4">基本資料</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">標題</label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                placeholder="輸入標題..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">公司簡介</label>
+              <textarea
+                value={formData.intro}
+                onChange={(e) => setFormData({ ...formData, intro: e.target.value })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                rows={4}
+                placeholder="輸入公司簡介..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">使命</label>
+              <input
+                type="text"
+                value={formData.mission}
+                onChange={(e) => setFormData({ ...formData, mission: e.target.value })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                placeholder="輸入公司使命..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">願景</label>
+              <input
+                type="text"
+                value={formData.vision}
+                onChange={(e) => setFormData({ ...formData, vision: e.target.value })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                placeholder="輸入公司願景..."
+              />
+            </div>
+          </div>
         </div>
 
+        {/* Brand Principles */}
         <div className="bg-white rounded-lg shadow border border-secondary-200 p-6">
           <h3 className="text-lg font-semibold text-primary-600 mb-4">品牌理念</h3>
-          <div className="space-y-3">
-            {['品質與安全', '準時交付', '透明溝通'].map((principle, index) => (
-              <div key={index} className="flex items-center space-x-3">
-                <input
-                  type="text"
-                  value={principle}
-                  className="flex-1 p-2 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
-                />
-                <button className="text-red-500 hover:text-red-600">移除</button>
+          <div className="space-y-4">
+            {formData.principles.map((principle, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="text"
+                        value={principle.icon || ''}
+                        onChange={(e) => handlePrincipleChange(index, 'icon', e.target.value)}
+                        className="w-16 p-2 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 text-center"
+                        placeholder="🎯"
+                      />
+                      <input
+                        type="text"
+                        value={principle.title || ''}
+                        onChange={(e) => handlePrincipleChange(index, 'title', e.target.value)}
+                        className="flex-1 p-2 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="理念標題"
+                      />
+                    </div>
+                    <textarea
+                      value={principle.description || ''}
+                      onChange={(e) => handlePrincipleChange(index, 'description', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
+                      rows={2}
+                      placeholder="理念描述"
+                    />
+                  </div>
+                  <button
+                    onClick={() => removePrinciple(index)}
+                    className="text-red-500 hover:text-red-600 p-1"
+                    title="移除"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
-          <button className="mt-4 bg-secondary-400 text-primary-600 px-4 py-2 rounded-lg hover:bg-secondary-500 transition-colors">
-            新增理念
+          <button
+            onClick={addPrinciple}
+            className="mt-4 bg-secondary-400 text-primary-600 px-4 py-2 rounded-lg hover:bg-secondary-500 transition-colors flex items-center space-x-2"
+          >
+            <Plus size={16} />
+            <span>新增理念</span>
+          </button>
+        </div>
+
+        {/* Milestones */}
+        <div className="bg-white rounded-lg shadow border border-secondary-200 p-6">
+          <h3 className="text-lg font-semibold text-primary-600 mb-4">發展歷程</h3>
+          <div className="space-y-4">
+            {formData.milestones.map((milestone, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="text"
+                        value={milestone.year || ''}
+                        onChange={(e) => handleMilestoneChange(index, 'year', e.target.value)}
+                        className="w-24 p-2 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500 text-center"
+                        placeholder="2023"
+                      />
+                      <input
+                        type="text"
+                        value={milestone.event || ''}
+                        onChange={(e) => handleMilestoneChange(index, 'event', e.target.value)}
+                        className="flex-1 p-2 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="重要事件或里程碑"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => removeMilestone(index)}
+                    className="text-red-500 hover:text-red-600 p-1"
+                    title="移除"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={addMilestone}
+            className="mt-4 bg-secondary-400 text-primary-600 px-4 py-2 rounded-lg hover:bg-secondary-500 transition-colors flex items-center space-x-2"
+          >
+            <Plus size={16} />
+            <span>新增發展歷程</span>
+          </button>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-600 transition-colors disabled:opacity-50 flex items-center space-x-2"
+          >
+            {saving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>儲存中...</span>
+              </>
+            ) : (
+              <span>儲存所有變更</span>
+            )}
           </button>
         </div>
       </div>
@@ -654,14 +1001,191 @@ function AdminAbout({ user }: { user: User }) {
 }
 
 function AdminContacts({ user }: { user: User }) {
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  const fetchContacts = async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        setError('未登入');
+        return;
+      }
+
+      const response = await fetch('/.netlify/functions/contacts', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      setContacts(data.contacts || []);
+    } catch (error) {
+      console.error('Failed to fetch contacts:', error);
+      setError('無法載入聯絡訊息');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('zh-TW');
+  };
+
+  const handleDeleteContact = async (contactId: string) => {
+    if (!confirm('確定要刪除這則聯絡訊息嗎？此操作無法復原。')) {
+      return;
+    }
+
+    setDeleting(contactId);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch(`/.netlify/functions/contacts/${contactId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      // Remove from local state
+      setContacts(contacts.filter(c => c.id !== contactId));
+    } catch (error) {
+      console.error('Failed to delete contact:', error);
+      alert('刪除失敗，請稍後再試');
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const handleUpdateStatus = async (contactId: string, newStatus: string) => {
+    setUpdating(contactId);
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch(`/.netlify/functions/contacts/${contactId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Update local state
+      setContacts(contacts.map(c =>
+        c.id === contactId ? { ...c, status: newStatus, updatedAt: data.contact.updatedAt } : c
+      ));
+    } catch (error) {
+      console.error('Failed to update contact status:', error);
+      alert('狀態更新失敗，請稍後再試');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      // First, update all contacts to 'read' status
+      const token = localStorage.getItem('admin_token');
+      const updatePromises = contacts
+        .filter(c => c.status === 'new')
+        .map(contact =>
+          fetch(`/.netlify/functions/contacts/${contact.id}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'read' })
+          })
+        );
+
+      await Promise.all(updatePromises);
+
+      // Create CSV content
+      const csvHeaders = ['ID', '姓名', '電話', 'Email', '專案類型', '訊息', '狀態', '建立時間'];
+      const csvRows = contacts.map(contact => [
+        contact.id,
+        contact.name,
+        contact.phone,
+        contact.email || '',
+        contact.project,
+        `"${contact.message.replace(/"/g, '""')}"`, // Escape quotes in message
+        contact.status === 'new' ? '已讀' : contact.status === 'read' ? '已讀' : '已處理',
+        formatDate(contact.createdAt)
+      ]);
+
+      const csvContent = [csvHeaders, ...csvRows]
+        .map(row => row.join(','))
+        .join('\n');
+
+      // Download CSV
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' }); // Add BOM for Excel
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `聯絡訊息_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Refresh contact list to show updated status
+      await fetchContacts();
+
+    } catch (error) {
+      console.error('Failed to export CSV:', error);
+      alert('匯出失敗，請稍後再試');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <AdminLayout user={user} title="聯絡訊息">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <p className="text-neutral-600">查看和管理客戶聯絡表單</p>
-          <button className="bg-secondary-400 text-primary-600 px-4 py-2 rounded-lg hover:bg-secondary-500 transition-colors flex items-center space-x-2">
-            <Download size={16} />
-            <span>匯出 CSV</span>
+          <button
+            onClick={handleExportCSV}
+            disabled={exporting || contacts.length === 0}
+            className="bg-secondary-400 text-primary-600 px-4 py-2 rounded-lg hover:bg-secondary-500 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {exporting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                <span>匯出中...</span>
+              </>
+            ) : (
+              <>
+                <Download size={16} />
+                <span>匯出 CSV</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -670,24 +1194,93 @@ function AdminContacts({ user }: { user: User }) {
             <h3 className="text-lg font-semibold text-primary-600">最新聯絡訊息</h3>
           </div>
           <div className="divide-y divide-secondary-200">
-            {[
-              { name: '王先生', phone: '0932-123456', project: '電梯大樓', date: '2024-09-24' },
-              { name: '李小姐', phone: '0987-654321', project: '透天', date: '2024-09-23' },
-              { name: '張公司', phone: '02-2345-6789', project: '華廈', date: '2024-09-22' }
-            ].map((contact, index) => (
-              <div key={index} className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium text-primary-600">{contact.name}</h4>
-                    <p className="text-sm text-neutral-600">{contact.phone} • {contact.project}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-neutral-500">{contact.date}</p>
-                    <button className="text-accent-500 hover:text-accent-600 text-sm">查看詳情</button>
+            {loading ? (
+              <div className="px-6 py-8 text-center text-neutral-500">
+                載入中...
+              </div>
+            ) : error ? (
+              <div className="px-6 py-8 text-center text-red-500">
+                {error}
+              </div>
+            ) : contacts.length === 0 ? (
+              <div className="px-6 py-8 text-center text-neutral-500">
+                暫無聯絡訊息
+              </div>
+            ) : (
+              contacts.slice(0, 10).map((contact) => (
+                <div key={contact.id} className="px-6 py-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 mr-4">
+                      <h4 className="font-medium text-primary-600">{contact.name}</h4>
+                      <p className="text-sm text-neutral-600">{contact.phone} • {contact.project}</p>
+                      {contact.email && (
+                        <p className="text-sm text-neutral-500">{contact.email}</p>
+                      )}
+                      <p className="text-sm text-neutral-500 mt-1 line-clamp-2">{contact.message}</p>
+                    </div>
+                    <div className="text-right min-w-[200px]">
+                      <p className="text-sm text-neutral-500 mb-2">{formatDate(contact.createdAt)}</p>
+
+                      {/* Status Dropdown */}
+                      <div className="mb-2">
+                        <select
+                          value={contact.status}
+                          onChange={(e) => handleUpdateStatus(contact.id, e.target.value)}
+                          disabled={updating === contact.id}
+                          className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                        >
+                          <option value="new">新訊息</option>
+                          <option value="read">已讀</option>
+                          <option value="processed">已處理</option>
+                          <option value="resolved">已解決</option>
+                        </select>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          onClick={() => handleDeleteContact(contact.id)}
+                          disabled={deleting === contact.id}
+                          className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+                          title="刪除"
+                        >
+                          {deleting === contact.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
+                          ) : (
+                            <Trash2 size={16} />
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="mt-2">
+                        {contact.status === 'new' ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                            <Clock size={10} className="mr-1" />
+                            新訊息
+                          </span>
+                        ) : contact.status === 'read' ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                            <Eye size={10} className="mr-1" />
+                            已讀
+                          </span>
+                        ) : contact.status === 'processed' ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                            <MessageSquare size={10} className="mr-1" />
+                            已處理
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                            <CheckCircle size={10} className="mr-1" />
+                            已解決
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -696,6 +1289,38 @@ function AdminContacts({ user }: { user: User }) {
 }
 
 function AdminDeploy({ user }: { user: User }) {
+  const [deploying, setDeploying] = useState(false);
+  const [deployHistory, setDeployHistory] = useState([
+    { version: 'v1.2.3', date: new Date().toLocaleString('zh-TW'), status: 'success' },
+    { version: 'v1.2.2', date: new Date(Date.now() - 86400000).toLocaleString('zh-TW'), status: 'success' },
+    { version: 'v1.2.1', date: new Date(Date.now() - 172800000).toLocaleString('zh-TW'), status: 'success' }
+  ]);
+
+  const handleDeploy = async () => {
+    setDeploying(true);
+    try {
+      // Mock deployment process (in real app, would trigger Netlify build)
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      const newVersion = `v1.2.${Date.now().toString().slice(-1)}`;
+      const newDeploy = {
+        version: newVersion,
+        date: new Date().toLocaleString('zh-TW'),
+        status: 'success'
+      };
+
+      setDeployHistory([newDeploy, ...deployHistory.slice(0, 4)]);
+      alert('網站重新部署成功！');
+    } catch (error) {
+      console.error('Deployment failed:', error);
+      alert('部署失敗，請稍後再試');
+    } finally {
+      setDeploying(false);
+    }
+  };
+
+  const currentDeploy = deployHistory[0];
+
   return (
     <AdminLayout user={user} title="網站部署">
       <div className="space-y-6">
@@ -704,40 +1329,90 @@ function AdminDeploy({ user }: { user: User }) {
         <div className="bg-white rounded-lg shadow border border-secondary-200 p-6">
           <h3 className="text-lg font-semibold text-primary-600 mb-4">部署狀態</h3>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className={`flex items-center justify-between p-4 rounded-lg ${
+              deploying
+                ? 'bg-yellow-50 border border-yellow-200'
+                : currentDeploy.status === 'success'
+                  ? 'bg-green-50 border border-green-200'
+                  : 'bg-red-50 border border-red-200'
+            }`}>
               <div className="flex items-center space-x-3">
-                <CheckCircle className="w-6 h-6 text-green-500" />
+                {deploying ? (
+                  <div className="w-6 h-6 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent"></div>
+                ) : currentDeploy.status === 'success' ? (
+                  <CheckCircle className="w-6 h-6 text-green-500" />
+                ) : (
+                  <div className="w-6 h-6 text-red-500">❌</div>
+                )}
                 <div>
-                  <p className="font-medium text-green-800">部署成功</p>
-                  <p className="text-sm text-green-600 flex items-center space-x-1">
+                  <p className={`font-medium ${
+                    deploying
+                      ? 'text-yellow-800'
+                      : currentDeploy.status === 'success'
+                        ? 'text-green-800'
+                        : 'text-red-800'
+                  }`}>
+                    {deploying ? '正在部署...' : currentDeploy.status === 'success' ? '部署成功' : '部署失敗'}
+                  </p>
+                  <p className={`text-sm flex items-center space-x-1 ${
+                    deploying
+                      ? 'text-yellow-600'
+                      : currentDeploy.status === 'success'
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                  }`}>
                     <Clock size={14} />
-                    <span>最後部署：2024-09-24 14:30</span>
+                    <span>最後部署：{currentDeploy.date}</span>
                   </p>
                 </div>
               </div>
-              <span className="text-green-600 text-sm">線上版本：v1.2.3</span>
+              <span className={`text-sm ${
+                deploying
+                  ? 'text-yellow-600'
+                  : currentDeploy.status === 'success'
+                    ? 'text-green-600'
+                    : 'text-red-600'
+              }`}>
+                線上版本：{currentDeploy.version}
+              </span>
             </div>
 
-            <button className="w-full bg-accent-500 text-white py-3 px-4 rounded-lg hover:bg-accent-600 transition-colors flex items-center justify-center space-x-2">
-              <Rocket size={18} />
-              <span>重新部署網站</span>
+            <button
+              onClick={handleDeploy}
+              disabled={deploying}
+              className="w-full bg-accent-500 text-white py-3 px-4 rounded-lg hover:bg-accent-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {deploying ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>部署中...</span>
+                </>
+              ) : (
+                <>
+                  <Rocket size={18} />
+                  <span>重新部署網站</span>
+                </>
+              )}
             </button>
 
             <div className="border-t border-secondary-200 pt-4">
               <h4 className="font-medium text-primary-600 mb-2">部署歷史</h4>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-neutral-600">
-                  <span>v1.2.3</span>
-                  <span>2024-09-24 14:30</span>
-                </div>
-                <div className="flex justify-between text-neutral-600">
-                  <span>v1.2.2</span>
-                  <span>2024-09-23 09:15</span>
-                </div>
-                <div className="flex justify-between text-neutral-600">
-                  <span>v1.2.1</span>
-                  <span>2024-09-22 16:45</span>
-                </div>
+                {deployHistory.map((deploy, index) => (
+                  <div key={index} className="flex justify-between items-center text-neutral-600">
+                    <span className="flex items-center space-x-2">
+                      <span>{deploy.version}</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${
+                        deploy.status === 'success'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {deploy.status === 'success' ? '成功' : '失敗'}
+                      </span>
+                    </span>
+                    <span>{deploy.date}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

@@ -1,35 +1,13 @@
 [
   {
-    "id": "1",
-    "name": "Test User",
-    "phone": "0912345678",
-    "email": "test@example.com",
-    "project": "�q��j��",
-    "message": "Testing backend connection",
-    "status": "new",
-    "createdAt": "2025-09-25T07:08:02.457Z",
-    "updatedAt": "2025-09-25T07:08:02.457Z"
-  },
-  {
-    "id": "2",
-    "name": "adf ",
-    "phone": "adf ad f",
+    "id": "6",
+    "name": "aaa",
+    "phone": "091222312",
     "email": "example@mail.com",
     "project": "電梯大樓",
-    "message": "adf ",
-    "status": "new",
-    "createdAt": "2025-09-25T07:09:37.608Z",
-    "updatedAt": "2025-09-25T07:09:37.608Z"
-  },
-  {
-    "id": "3",
-    "name": "adf ",
-    "phone": "adf adf ",
-    "email": "example@mail.com",
-    "project": "電梯大樓",
-    "message": "adsf asdf ",
-    "status": "new",
-    "createdAt": "2025-09-25T07:10:01.744Z",
-    "updatedAt": "2025-09-25T07:10:01.744Z"
+    "message": "adf adf ",
+    "status": "resolved",
+    "createdAt": "2025-09-25T13:34:26.894Z",
+    "updatedAt": "2025-09-25T13:40:32.867Z"
   }
 ]
