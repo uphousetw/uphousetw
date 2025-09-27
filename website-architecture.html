@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建設公司網站架構與技術文件</title>
+    <style>
+        @page {
+            margin: 2cm;
+            size: A4;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #1e40af;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            color: #64748b;
+            margin: 10px 0 0 0;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+
+        .section h2 {
+            color: #1e40af;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            font-size: 20px;
+        }
+
+        .section h3 {
+            color: #475569;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .tech-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .tech-item h4 {
+            color: #1e40af;
+            margin: 0 0 8px 0;
+            font-size: 14px;
+        }
+
+        .tech-item p {
+            margin: 0;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .file-tree {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .component-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+        }
+
+        .component-card h4 {
+            color: #1e40af;
+            margin: 0 0 8px 0;
+            font-size: 14px;
+        }
+
+        .component-card .path {
+            color: #64748b;
+            font-family: monospace;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .component-card .description {
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .api-endpoint {
+            background: #f1f5f9;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        .api-endpoint .method {
+            color: #1e40af;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .api-endpoint .url {
+            font-family: monospace;
+            color: #475569;
+        }
+
+        .data-model {
+            background: #fafafa;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            margin: 10px 0;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .feature-item {
+            background: #ecfdf5;
+            border: 1px solid #d1fae5;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 12px;
+        }
+
+        .feature-item.admin {
+            background: #fef3c7;
+            border-color: #fde68a;
+        }
+
+        .security-item {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 8px 0;
+            font-size: 12px;
+        }
+
+        .deployment-step {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 8px 0;
+            font-size: 12px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #f1f5f9;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>建設公司 Portfolio 網站</h1>
+        <p>架構設計與技術文件</p>
+        <p>產生日期: 2025-09-25 | 版本: 1.0</p>
+    </div>
+
+    <div class="section">
+        <h2>📋 專案概述</h2>
+        <p>這是一個基於 React 和 TypeScript 的現代化建設公司作品集網站，採用 Serverless 架構部署於 Netlify。<strong>目前前台功能已完成，後台管理系統還在開發階段。</strong></p>
+
+        <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 8px; padding: 15px; margin: 15px 0;">
+            <h4 style="color: #047857; margin: 0 0 10px 0;">✅ 最新開發狀態</h4>
+            <ul style="color: #047857; margin: 0; padding-left: 20px;">
+                <li><strong>前台網站</strong> - ✅ 完成並可正常運作</li>
+                <li><strong>Google OAuth 登入</strong> - ✅ 已完成實作</li>
+                <li><strong>Magic Link 登入</strong> - ⚠️ 基礎架構完成</li>
+                <li><strong>內容管理</strong> - ⚠️ UI 介面完成，但 API 功能待實作</li>
+                <li><strong>部署功能</strong> - ⚠️ 待實作</li>
+            </ul>
+        </div>
+
+        <h3>核心特色</h3>
+        <div class="feature-list">
+            <div class="feature-item">✅ 響應式設計</div>
+            <div class="feature-item">✅ SEO 優化</div>
+            <div class="feature-item">✅ 多語言支援</div>
+            <div class="feature-item">✅ 無障礙設計</div>
+            <div class="feature-item admin">🔧 後台管理系統</div>
+            <div class="feature-item admin">🔧 內容管理</div>
+            <div class="feature-item admin">🔧 Google OAuth</div>
+            <div class="feature-item admin">🔧 部署控制</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🏗️ 技術架構</h2>
+
+        <div class="tech-stack">
+            <div class="tech-item">
+                <h4>前端框架</h4>
+                <p>React 18 + TypeScript</p>
+            </div>
+            <div class="tech-item">
+                <h4>路由管理</h4>
+                <p>React Router DOM v6</p>
+            </div>
+            <div class="tech-item">
+                <h4>樣式系統</h4>
+                <p>Tailwind CSS v3</p>
+            </div>
+            <div class="tech-item">
+                <h4>動畫效果</h4>
+                <p>Framer Motion</p>
+            </div>
+            <div class="tech-item">
+                <h4>圖標庫</h4>
+                <p>Lucide React</p>
+            </div>
+            <div class="tech-item">
+                <h4>建構工具</h4>
+                <p>Vite v4</p>
+            </div>
+            <div class="tech-item">
+                <h4>後端架構</h4>
+                <p>Netlify Functions</p>
+            </div>
+            <div class="tech-item">
+                <h4>部署平台</h4>
+                <p>Netlify (自動部署)</p>
+            </div>
+            <div class="tech-item">
+                <h4>身份驗證</h4>
+                <p>JWT + Google OAuth</p>
+            </div>
+            <div class="tech-item">
+                <h4>分析工具</h4>
+                <p>Google Analytics 4</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section page-break">
+        <h2>📁 專案結構</h2>
+
+        <div class="file-tree">
+Uphousev2/
+├── 📁 public/                    # 靜態資源
+│   ├── 🤖 robots.txt            # SEO 爬蟲規則
+│   └── 🗺️ sitemap.xml           # 網站地圖
+├── 📁 src/                      # 原始碼
+│   ├── 📁 components/           # 可重用組件
+│   │   ├── Header.tsx          # 網站頭部導航
+│   │   ├── Footer.tsx          # 網站底部
+│   │   ├── Layout.tsx          # 頁面布局組件
+│   │   └── SEO.tsx             # SEO 元標籤組件
+│   ├── 📁 pages/               # 頁面組件
+│   │   ├── Home.tsx            # 首頁
+│   │   ├── About.tsx           # 關於我們
+│   │   ├── Projects.tsx        # 專案列表
+│   │   ├── ProjectDetail.tsx   # 專案詳情
+│   │   ├── Contact.tsx         # 聯絡我們
+│   │   ├── Admin.tsx           # 後台管理
+│   │   ├── PrivacyPolicy.tsx   # 隱私權政策
+│   │   └── Disclaimer.tsx      # 免責聲明
+│   ├── 📁 types/               # TypeScript 型別定義
+│   │   └── index.ts            # 全域型別
+│   ├── 📁 data/                # 預設資料
+│   │   └── defaultData.ts      # 範例資料
+│   ├── 📁 utils/               # 工具函數
+│   │   └── analytics.ts        # GA4 分析工具
+│   ├── App.tsx                 # 根組件
+│   ├── main.tsx               # 應用程式入口
+│   └── index.css              # 全域樣式
+├── 📁 netlify/                  # Netlify 配置
+│   └── 📁 functions/           # Serverless 函數
+├── 📄 package.json             # 依賴套件管理
+├── 📄 tailwind.config.js       # Tailwind 配置
+├── 📄 vite.config.ts           # Vite 建構配置
+├── 📄 netlify.toml            # Netlify 部署配置
+├── 📄 README.md               # 專案說明
+└── 📄 PRD.md                  # 產品需求文件
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🧩 核心組件架構</h2>
+
+        <div class="component-grid">
+            <div class="component-card">
+                <h4>App.tsx</h4>
+                <div class="path">src/App.tsx</div>
+                <div class="description">
+                    應用程式根組件，配置路由系統和 GA4 初始化。包含所有主要路由定義和 SEO 組件整合。
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>Layout.tsx</h4>
+                <div class="path">src/components/Layout.tsx</div>
+                <div class="description">
+                    頁面布局組件，提供統一的頁面結構，包含 Header、主要內容區域和 Footer。
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>Header.tsx</h4>
+                <div class="path">src/components/Header.tsx</div>
+                <div class="description">
+                    網站導航頭部，包含 Logo、主選單和響應式行動選單功能。
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>Footer.tsx</h4>
+                <div class="path">src/components/Footer.tsx</div>
+                <div class="description">
+                    網站底部，包含公司資訊、聯絡方式和法規連結（隱私權政策、免責聲明）。
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>SEO.tsx</h4>
+                <div class="path">src/components/SEO.tsx</div>
+                <div class="description">
+                    SEO 優化組件，動態設定每個頁面的 meta title、description 和其他 SEO 標籤。
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>Home.tsx</h4>
+                <div class="path">src/pages/Home.tsx</div>
+                <div class="description">
+                    首頁組件，包含 Hero 區塊、服務介紹、精選專案展示和 CTA 呼籲行動。
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>Projects.tsx</h4>
+                <div class="path">src/pages/Projects.tsx</div>
+                <div class="description">
+                    專案列表頁面，提供專案篩選（類別、年份）和排序功能，支援響應式網格布局。
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>ProjectDetail.tsx</h4>
+                <div class="path">src/pages/ProjectDetail.tsx</div>
+                <div class="description">
+                    專案詳情頁面，顯示專案完整資訊包含封面圖、詳細資料和內文描述。
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>Contact.tsx</h4>
+                <div class="path">src/pages/Contact.tsx</div>
+                <div class="description">
+                    聯絡表單頁面，包含預設值設定、表單驗證和送出後的成功提示訊息。
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>Admin.tsx</h4>
+                <div class="path">src/pages/Admin.tsx</div>
+                <div class="description">
+                    後台管理系統，包含登入驗證、內容管理、部署控制和聯絡訊息查看功能。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section page-break">
+        <h2>📊 資料模型設計</h2>
+
+        <h3>Project 專案模型</h3>
+        <div class="data-model">
+{
+  "slug": "default-project",           // 專案唯一識別碼
+  "title": "範例建案",                 // 專案標題
+  "category": "透天",                  // 類別：透天/華廈/電梯大樓/其他
+  "year": 2025,                       // 建案年份
+  "location": "台北市中正區",          // 建案地點
+  "summary": "專案簡介...",            // 專案摘要
+  "coverUrl": "https://...",          // 封面圖片 URL
+  "facts": {                          // 專案詳細資料
+    "地點": "台北市中正區",
+    "類別": "透天",
+    "年份": "2025",
+    "完工日": "2025-12-31"
+  },
+  "body": "專案內文描述..."           // 專案詳細說明
+}
+        </div>
+
+        <h3>AboutUs 關於我們模型</h3>
+        <div class="data-model">
+{
+  "title": "關於我們",
+  "intro": "公司簡介內容...",          // 公司介紹
+  "principles": [                     // 經營理念
+    "品質與安全",
+    "準時交付",
+    "透明溝通"
+  ],
+  "milestones": [                     // 重要里程碑
+    {
+      "year": 2019,
+      "event": "公司成立"
+    }
+  ]
+}
+        </div>
+
+        <h3>ContactMessage 聯絡訊息模型</h3>
+        <div class="data-model">
+{
+  "name": "王大名",                    // 聯絡人姓名（必填）
+  "phone": "0932-123456",             // 聯絡電話（必填）
+  "email": "example@mail.com",        // Email（選填）
+  "project": "電梯大樓",              // 感興趣的專案類型（必填）
+  "message": "詢問內容...",           // 訊息內容（必填）
+  "createdAt": "2025-09-25T08:00:00Z" // 建立時間
+}
+        </div>
+
+        <h3>User 使用者模型</h3>
+        <div class="data-model">
+{
+  "id": "user-uuid",                  // 使用者唯一 ID
+  "email": "admin@company.com",       // Email 地址
+  "role": "admin",                    // 角色：admin/editor
+  "name": "管理員"                    // 顯示名稱
+}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔗 API 端點設計</h2>
+
+        <h3>認證相關</h3>
+        <div class="api-endpoint">
+            <span class="method">GET</span>
+            <span class="url">/.netlify/functions/auth?method=google</span>
+            <p>Google OAuth 登入 ✅ 已完成實作</p>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="method">GET</span>
+            <span class="url">/.netlify/functions/auth-callback</span>
+            <p>Google OAuth 回調處理 ✅ 已完成實作</p>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="method">POST</span>
+            <span class="url">/.netlify/functions/auth</span>
+            <p>Magic Link 登入 ⚠️ 基礎架構完成</p>
+        </div>
+
+        <div class="api-endpoint">
+            <span class="method">POST</span>
+            <span class="url">/.netlify/functions/auth</span>
+            <p>登出處理 ✅ 基礎實作</p>
+        </div>
+
+        <h3>⚠️ 待開發的後台功能</h3>
+        <div class="api-endpoint" style="opacity: 0.6; border-left: 4px solid #f59e0b;">
+            <span class="method">GET/POST/PUT/DELETE</span>
+            <span class="url">/.netlify/functions/projects</span>
+            <p>專案 CRUD 管理 (待實作)</p>
+        </div>
+
+        <div class="api-endpoint" style="opacity: 0.6; border-left: 4px solid #f59e0b;">
+            <span class="method">GET/POST</span>
+            <span class="url">/.netlify/functions/about</span>
+            <p>關於我們內容管理 (待實作)</p>
+        </div>
+
+        <h3>聯絡功能</h3>
+        <div class="api-endpoint">
+            <span class="method">POST</span>
+            <span class="url">/.netlify/functions/contact</span>
+            <p>提交聯絡表單 ✅ 基礎實作完成</p>
+        </div>
+
+        <div class="api-endpoint" style="opacity: 0.6; border-left: 4px solid #f59e0b;">
+            <span class="method">GET</span>
+            <span class="url">/.netlify/functions/contact-messages</span>
+            <p>聯絡訊息查看 (待實作)</p>
+        </div>
+
+        <div class="api-endpoint" style="opacity: 0.6; border-left: 4px solid #f59e0b;">
+            <span class="method">POST</span>
+            <span class="url">/.netlify/functions/deploy</span>
+            <p>網站部署控制 (待實作)</p>
+        </div>
+
+        <div class="api-endpoint" style="opacity: 0.6; border-left: 4px solid #f59e0b;">
+            <span class="method">POST</span>
+            <span class="url">/.netlify/functions/upload</span>
+            <p>圖片上傳處理 (待實作)</p>
+        </div>
+
+        <div class="api-endpoint" style="opacity: 0.6; border-left: 4px solid #f59e0b;">
+            <span class="method">POST</span>
+            <span class="url">/.netlify/functions/analytics</span>
+            <p>GA4 事件追蹤 (待實作)</p>
+        </div>
+    </div>
+
+    <div class="section page-break">
+        <h2>🔒 安全性設計</h2>
+
+        <div class="security-item">
+            <strong>JWT 認證</strong> - 使用 HttpOnly Cookie 儲存 JWT Token，防止 XSS 攻擊
+        </div>
+
+        <div class="security-item">
+            <strong>HTTPS 強制加密</strong> - 所有資料傳輸都通過 HTTPS 加密保護
+        </div>
+
+        <div class="security-item">
+            <strong>CORS 設定</strong> - 限制跨來源請求，保護 API 端點安全
+        </div>
+
+        <div class="security-item">
+            <strong>管理員白名單</strong> - 只有預設的 Email 地址才能存取後台管理功能
+        </div>
+
+        <div class="security-item">
+            <strong>檔案上傳限制</strong> - 限制檔案類型、大小和上傳頻率
+        </div>
+
+        <div class="security-item">
+            <strong>PII 資料保護</strong> - 個人識別資訊不會傳送至 Google Analytics
+        </div>
+
+        <div class="security-item">
+            <strong>敏感路徑保護</strong> - 管理員相關檔案和配置受到存取限制
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📈 Google Analytics 4 整合</h2>
+
+        <h3>前台事件追蹤</h3>
+        <ul>
+            <li><span class="code">page_view</span> - 頁面瀏覽追蹤</li>
+            <li><span class="code">contact_form_submit</span> - 聯絡表單提交</li>
+            <li><span class="code">project_view</span> - 專案詳情查看</li>
+            <li><span class="code">navigation_click</span> - 導航點擊追蹤</li>
+        </ul>
+
+        <h3>後台事件追蹤</h3>
+        <ul>
+            <li><span class="code">admin_login</span> - 管理員登入（參數：method, result）</li>
+            <li><span class="code">admin_logout</span> - 管理員登出</li>
+            <li><span class="code">admin_action</span> - CRUD 操作（參數：action, entity, status）</li>
+            <li><span class="code">admin_upload</span> - 檔案上傳（參數：file_type, size_kb, status）</li>
+            <li><span class="code">admin_deploy_triggered</span> - 部署觸發</li>
+            <li><span class="code">admin_deploy_result</span> - 部署結果（參數：status, build_id）</li>
+            <li><span class="code">admin_error</span> - 錯誤記錄（參數：where, code, message）</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🚀 部署架構</h2>
+
+        <h3>Netlify 自動部署流程</h3>
+        <div class="deployment-step">
+            <strong>1. Git Push</strong> - 程式碼推送到 GitHub repository
+        </div>
+
+        <div class="deployment-step">
+            <strong>2. 自動觸發</strong> - Netlify 偵測到程式碼變更自動開始建構
+        </div>
+
+        <div class="deployment-step">
+            <strong>3. 依賴安裝</strong> - 執行 <span class="code">npm install</span> 安裝所有依賴套件
+        </div>
+
+        <div class="deployment-step">
+            <strong>4. 建構程序</strong> - 執行 <span class="code">npm run build</span> 建構生產版本
+        </div>
+
+        <div class="deployment-step">
+            <strong>5. 靜態檔案部署</strong> - 將 <span class="code">dist/</span> 資料夾內容部署到 CDN
+        </div>
+
+        <div class="deployment-step">
+            <strong>6. Serverless Functions</strong> - 部署 <span class="code">netlify/functions/</span> 中的 API 端點
+        </div>
+
+        <div class="deployment-step">
+            <strong>7. 部署完成</strong> - 新版本上線，發送通知
+        </div>
+
+        <h3>環境變數配置</h3>
+        <div class="data-model">
+REACT_APP_SITE_URL=https://your-site.netlify.app
+REACT_APP_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+JWT_SECRET=your-secure-secret-key
+ADMIN_EMAILS=admin@company.com,manager@company.com
+        </div>
+    </div>
+
+    <div class="section page-break">
+        <h2>⚡ 效能優化</h2>
+
+        <h3>前端優化</h3>
+        <ul>
+            <li><strong>圖片延遲載入</strong> - 使用 Intersection Observer API 實現圖片 lazy loading</li>
+            <li><strong>程式碼分割</strong> - React.lazy() 和 Suspense 實現路由層級的程式碼分割</li>
+            <li><strong>快取策略</strong> - 靜態資源設定適當的 Cache-Control 標頭</li>
+            <li><strong>壓縮優化</strong> - Gzip/Brotli 壓縮減少傳輸大小</li>
+            <li><strong>CDN 加速</strong> - Netlify 全球 CDN 提供快速內容傳送</li>
+        </ul>
+
+        <h3>SEO 優化</h3>
+        <ul>
+            <li><strong>Meta 標籤</strong> - 動態生成每頁的 title 和 description</li>
+            <li><strong>結構化資料</strong> - JSON-LD 格式的 Organization 和 Project 結構化資料</li>
+            <li><strong>Sitemap</strong> - 自動生成並更新的 XML sitemap</li>
+            <li><strong>Robots.txt</strong> - 爬蟲友善的 robots.txt 配置</li>
+            <li><strong>語義化 HTML</strong> - 使用適當的 HTML5 語義標籤</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>📋 法規合規</h2>
+
+        <h3>隱私權政策</h3>
+        <ul>
+            <li><strong>個資蒐集範圍</strong> - 明確說明蒐集的個人資料類型</li>
+            <li><strong>使用目的</strong> - 詳細說明個資使用目的和範圍</li>
+            <li><strong>保存期限</strong> - 自收到日起 5 年，期滿即刪除</li>
+            <li><strong>安全措施</strong> - HTTPS 加密傳輸和存取權限控制</li>
+            <li><strong>使用者權利</strong> - 提供查詢、更正、刪除個資的管道</li>
+        </ul>
+
+        <h3>Cookie 政策</h3>
+        <ul>
+            <li><strong>必要 Cookie</strong> - 僅使用維持網站運作必需的 Cookie</li>
+            <li><strong>分析 Cookie</strong> - Google Analytics 4 匿名分析</li>
+            <li><strong>驗證 Cookie</strong> - 後台登入使用 HttpOnly Cookie</li>
+        </ul>
+
+        <h3>免責聲明</h3>
+        <ul>
+            <li><strong>內容準確性</strong> - 網站內容僅供參考，不構成法律承諾</li>
+            <li><strong>服務變更</strong> - 保留隨時修改網站內容的權利</li>
+            <li><strong>責任限制</strong> - 明確規範公司責任範圍</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🛠️ 開發與維護</h2>
+
+        <h3>開發環境設定</h3>
+        <div class="data-model">
+# 複製專案
+git clone https://github.com/uphousetw/uphousetw.git
+cd uphousetw
+
+# 安裝依賴
+npm install
+
+# 設定環境變數
+cp .env.example .env
+# 編輯 .env 填入實際配置值
+
+# 啟動開發服務器
+npm run dev
+        </div>
+
+        <h3>建構與部署</h3>
+        <div class="data-model">
+# 建構生產版本
+npm run build
+
+# 本地預覽
+npm run preview
+
+# 程式碼檢查
+npm run lint
+
+# 類型檢查
+npm run type-check
+        </div>
+
+        <h3>內容更新流程</h3>
+        <ol>
+            <li>登入後台管理系統 (<span class="code">/admin</span>)</li>
+            <li>使用 Google OAuth 或 Magic Link 驗證身份</li>
+            <li>編輯專案、關於我們等內容</li>
+            <li>上傳圖片到雲端儲存</li>
+            <li>儲存變更並觸發自動部署</li>
+            <li>確認前台內容更新成功</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>📞 技術支援與聯絡</h2>
+
+        <h3>疑難排解</h3>
+        <div class="component-grid">
+            <div class="component-card">
+                <h4>建構錯誤</h4>
+                <div class="description">
+                    清除 node_modules 並重新安裝：<br>
+                    <span class="code">rm -rf node_modules package-lock.json</span><br>
+                    <span class="code">npm install</span>
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>樣式問題</h4>
+                <div class="description">
+                    重新建構 CSS：<br>
+                    <span class="code">npm run build</span><br>
+                    檢查 Tailwind 配置是否正確
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>部署失敗</h4>
+                <div class="description">
+                    檢查 Netlify 環境變數設定<br>
+                    確認 Build 指令和輸出目錄設定<br>
+                    查看 Netlify Functions 日誌
+                </div>
+            </div>
+
+            <div class="component-card">
+                <h4>後台存取問題</h4>
+                <div class="description">
+                    確認 Email 在管理員白名單中<br>
+                    檢查 JWT_SECRET 環境變數<br>
+                    清除瀏覽器 Cookie 重新登入
+                </div>
+            </div>
+        </div>
+
+        <h3>文件參考</h3>
+        <ul>
+            <li><span class="highlight">PRD.md</span> - 完整產品需求文件</li>
+            <li><span class="highlight">README.md</span> - 快速開始指南</li>
+            <li><span class="highlight">package.json</span> - 專案依賴和腳本</li>
+            <li><span class="highlight">.env.example</span> - 環境變數範例</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>✅ PRD 合規檢查清單</h2>
+
+        <h3>前台功能</h3>
+        <div class="feature-list">
+            <div class="feature-item">✅ 首頁 Hero + 服務優勢 + 精選專案</div>
+            <div class="feature-item">✅ 關於我們頁面（簡介 + 理念 + 歷程）</div>
+            <div class="feature-item">✅ 專案列表（篩選 + 排序）</div>
+            <div class="feature-item">✅ 專案詳情頁面</div>
+            <div class="feature-item">✅ 聯絡表單（必填預設值）</div>
+            <div class="feature-item">✅ 隱私權政策 + 免責聲明連結</div>
+        </div>
+
+        <h3>後台功能</h3>
+        <div class="feature-list">
+            <div class="feature-item admin" style="background: #ecfdf5; border-color: #10b981;">✅ Google OAuth 登入系統 (已完成)</div>
+            <div class="feature-item admin" style="background: #fef3c7; border-color: #f59e0b;">⚠️ Magic Link 登入 (基礎架構完成)</div>
+            <div class="feature-item admin" style="background: #fef3c7; border-color: #f59e0b;">⚠️ 內容管理 (UI 完成 ✅ | API 待實作)</div>
+            <div class="feature-item admin" style="background: #fee2e2; border-color: #fca5a5;">❌ 部署控制 (待實作)</div>
+            <div class="feature-item admin" style="background: #fee2e2; border-color: #fca5a5;">❌ GA4 事件追蹤 (待實作)</div>
+        </div>
+
+        <h3>技術需求</h3>
+        <div class="feature-list">
+            <div class="feature-item">✅ React + React Router + TypeScript</div>
+            <div class="feature-item">✅ Tailwind CSS + Framer Motion</div>
+            <div class="feature-item">✅ Serverless Functions (Netlify)</div>
+            <div class="feature-item">✅ SEO 優化 (sitemap, robots.txt, meta)</div>
+            <div class="feature-item">✅ 安全性 (JWT + HttpOnly Cookie)</div>
+        </div>
+
+        <h3>法規合規</h3>
+        <div class="feature-list">
+            <div class="feature-item">✅ 完整隱私權政策</div>
+            <div class="feature-item">✅ 免責聲明</div>
+            <div class="feature-item">✅ Cookie 政策說明</div>
+            <div class="feature-item">✅ 個資權利保護</div>
+            <div class="feature-item">✅ GA4 不含 PII</div>
+        </div>
+    </div>
+
+    <div class="section" style="text-align: center; padding: 30px 0; border-top: 2px solid #e2e8f0; margin-top: 40px;">
+        <p style="color: #64748b; margin: 0;">
+            <strong>文件版本：</strong> 1.0 |
+            <strong>更新日期：</strong> 2025-09-25 |
+            <strong>專案：</strong> 建設公司 Portfolio 網站
+        </p>
+    </div>
+</body>
+</html>
