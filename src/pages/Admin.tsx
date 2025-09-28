@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
-import { apiService } from '../services/mockApi';
+import { apiService } from '../services/apiService';
+import { AdminGallery, AdminSettings } from '../components/AdminComponents';
+import { isDemoModeAvailable, DEMO_CONFIG, validateEnvironment } from '../config/environment';
 import {
   Building2,
   Users,
@@ -16,7 +18,9 @@ import {
   Trash2,
   Download,
   CheckCircle,
-  Clock
+  Clock,
+  Image as ImageIcon,
+  Settings
 } from 'lucide-react';
 
 interface User {
@@ -29,16 +33,30 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Validate environment on startup
+    const envCheck = validateEnvironment();
+    if (envCheck.warnings.length > 0) {
+      console.error('Environment warnings:', envCheck.warnings);
+    }
+
     // Check if user is already logged in
     const token = localStorage.getItem('admin_token');
     if (token) {
-      // In a real app, you would verify this token with the server
-      setUser({ email: 'admin@example.com', role: 'admin' });
-    } else if (import.meta.env.DEV) {
-      // For development environment, set demo token
-      localStorage.setItem('admin_token', 'demo-token');
-      setUser({ email: 'demo@uphousetw.com', role: 'admin' });
+      // Verify token type and set appropriate user
+      if (token === DEMO_CONFIG.TOKEN && isDemoModeAvailable()) {
+        setUser(DEMO_CONFIG.USER);
+      } else {
+        // Real token - decode JWT to get user info
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          setUser({ email: payload.email, role: payload.role });
+        } catch (e) {
+          // Invalid token, clear it
+          localStorage.removeItem('admin_token');
+        }
+      }
     }
+    // Note: Removed auto-demo login for production safety
     setLoading(false);
   }, []);
 
@@ -70,6 +88,12 @@ export default function Admin() {
         } />
         <Route path="contacts" element={
           user ? <AdminContacts user={user} /> : <Navigate to="/admin" replace />
+        } />
+        <Route path="gallery" element={
+          user ? <AdminGallery user={user} /> : <Navigate to="/admin" replace />
+        } />
+        <Route path="settings" element={
+          user ? <AdminSettings user={user} /> : <Navigate to="/admin" replace />
         } />
         <Route path="deploy" element={
           user ? <AdminDeploy user={user} /> : <Navigate to="/admin" replace />
@@ -200,10 +224,15 @@ function AdminLogin({ setUser }: { setUser: (user: User | null) => void }) {
   };
 
   const handleDemoLogin = () => {
-    // Demo login for development
-    const demoUser = { email: 'demo@example.com', role: 'admin' as const };
-    localStorage.setItem('admin_token', 'demo-token');
-    setUser(demoUser);
+    // Demo login - only available in development
+    if (!isDemoModeAvailable()) {
+      setMessage('Demo mode not available in production');
+      setMessageType('error');
+      return;
+    }
+
+    localStorage.setItem('admin_token', DEMO_CONFIG.TOKEN);
+    setUser(DEMO_CONFIG.USER);
     navigate('/admin/dashboard');
   };
 
@@ -260,25 +289,28 @@ function AdminLogin({ setUser }: { setUser: (user: User | null) => void }) {
             </button>
           </div>
 
-          <div className="border-t border-gray-200 pt-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <h4 className="font-medium text-blue-800 mb-2">🎯 快速登入</h4>
-              <p className="text-sm text-blue-600 mb-3">
-                點擊下方按鈕直接以管理員身份登入後台，無需設定 Google OAuth
-              </p>
-              <div className="text-xs text-blue-500">
-                <p><strong>帳號：</strong> demo@uphousetw.com</p>
-                <p><strong>身份：</strong> 管理員</p>
+          {isDemoModeAvailable() && (
+            <div className="border-t border-gray-200 pt-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <h4 className="font-medium text-blue-800 mb-2">🎯 開發模式快速登入</h4>
+                <p className="text-sm text-blue-600 mb-3">
+                  點擊下方按鈕直接以管理員身份登入後台，無需設定 Google OAuth
+                </p>
+                <div className="text-xs text-blue-500">
+                  <p><strong>帳號：</strong> {DEMO_CONFIG.USER.email}</p>
+                  <p><strong>身份：</strong> 管理員</p>
+                  <p><strong>警告：</strong> {DEMO_CONFIG.WARNING}</p>
+                </div>
               </div>
+              <button
+                onClick={handleDemoLogin}
+                className="w-full bg-accent-500 text-white py-3 px-4 rounded-lg hover:bg-accent-600 transition-colors flex items-center justify-center space-x-2"
+              >
+                <Rocket size={18} />
+                <span>Demo 登入 (開發模式)</span>
+              </button>
             </div>
-            <button
-              onClick={handleDemoLogin}
-              className="w-full bg-accent-500 text-white py-3 px-4 rounded-lg hover:bg-accent-600 transition-colors flex items-center justify-center space-x-2"
-            >
-              <Rocket size={18} />
-              <span>Demo 登入 (直接進入管理後台)</span>
-            </button>
-          </div>
+          )}
         </div>
 
         <p className="text-xs text-neutral-500 text-center mt-6">
@@ -375,9 +407,9 @@ function AdminDashboard({ user, setUser }: { user: User; setUser: (user: User | 
           <p className="text-neutral-600">管理網站內容與設定</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AdminCard
-            title="專案管理"
+            title="建案管理"
             description="新增、編輯建案資訊"
             icon={<Building2 size={32} />}
             href="/admin/projects"
@@ -389,10 +421,22 @@ function AdminDashboard({ user, setUser }: { user: User; setUser: (user: User | 
             href="/admin/about"
           />
           <AdminCard
+            title="圖片庫"
+            description="管理網站圖片與相簿"
+            icon={<ImageIcon size={32} />}
+            href="/admin/gallery"
+          />
+          <AdminCard
             title="聯絡訊息"
             description="查看客戶來信"
             icon={<Mail size={32} />}
             href="/admin/contacts"
+          />
+          <AdminCard
+            title="網站設定"
+            description="管理 Logo 與網站配置"
+            icon={<Settings size={32} />}
+            href="/admin/settings"
           />
           <AdminCard
             title="網站部署"
@@ -420,7 +464,7 @@ function AdminDashboard({ user, setUser }: { user: User; setUser: (user: User | 
                   ) : (
                     <>
                       <p className="text-2xl font-bold text-primary-600">{stats.totalProjects}</p>
-                      <p className="text-neutral-600 text-sm">總專案數</p>
+                      <p className="text-neutral-600 text-sm">總建案數</p>
                     </>
                   )}
                 </div>
@@ -509,17 +553,12 @@ function AdminProjects({ user }: { user: User }) {
         return;
       }
 
-      const data = await apiService.makeRequest('/api/projects', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const data = await apiService.getAdminProjects(token);
 
       setProjects(data.projects || []);
     } catch (error) {
       console.error('Failed to fetch projects:', error);
-      setError('無法載入專案列表');
+      setError('無法載入建案列表');
     } finally {
       setLoading(false);
     }
@@ -540,7 +579,7 @@ function AdminProjects({ user }: { user: User }) {
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    if (!confirm('確定要刪除這個專案嗎？此操作無法復原。')) {
+    if (!confirm('確定要刪除這個建案嗎？此操作無法復原。')) {
       return;
     }
 
@@ -563,7 +602,7 @@ function AdminProjects({ user }: { user: User }) {
       setProjects(projects.filter(p => p.id !== projectId));
     } catch (error) {
       console.error('Failed to delete project:', error);
-      alert('刪除專案失敗，請稍後再試');
+      alert('刪除建案失敗，請稍後再試');
     } finally {
       setDeleting(null);
     }
@@ -587,7 +626,7 @@ function AdminProjects({ user }: { user: User }) {
 
   if (loading) {
     return (
-      <AdminLayout user={user} title="專案管理">
+      <AdminLayout user={user} title="建案管理">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-gray-600">載入中...</p>
@@ -597,11 +636,11 @@ function AdminProjects({ user }: { user: User }) {
   }
 
   return (
-    <AdminLayout user={user} title="專案管理">
+    <AdminLayout user={user} title="建案管理">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <p className="text-neutral-600">管理建案專案與內容</p>
+            <p className="text-neutral-600">管理建案建案與內容</p>
             {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
           </div>
           <button
@@ -609,24 +648,24 @@ function AdminProjects({ user }: { user: User }) {
             className="bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-600 transition-colors flex items-center space-x-2"
           >
             <Plus size={16} />
-            <span>新增專案</span>
+            <span>新增建案</span>
           </button>
         </div>
 
         <div className="bg-white rounded-lg shadow border border-secondary-200 p-6">
           <h3 className="text-lg font-semibold text-primary-600 mb-4">
-            現有專案 ({projects.length})
+            現有建案 ({projects.length})
           </h3>
 
           {projects.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Building2 size={48} className="mx-auto mb-4 opacity-50" />
-              <p>尚無專案資料</p>
+              <p>尚無建案資料</p>
               <button
                 onClick={handleAddProject}
                 className="mt-4 text-accent-500 hover:text-accent-600 font-medium"
               >
-                新增第一個專案 →
+                新增第一個建案 →
               </button>
             </div>
           ) : (
@@ -696,6 +735,7 @@ function AdminAbout({ user }: { user: User }) {
     intro: string;
     mission: string;
     vision: string;
+    brandPrinciplesSubtitle?: string;
     principles: { icon?: string; title: string; description: string; }[];
     milestones: { year: string; event: string; }[];
   }>({
@@ -703,6 +743,7 @@ function AdminAbout({ user }: { user: User }) {
     intro: '',
     mission: '',
     vision: '',
+    brandPrinciplesSubtitle: '',
     principles: [],
     milestones: []
   });
@@ -715,17 +756,13 @@ function AdminAbout({ user }: { user: User }) {
         return;
       }
 
-      const data = await apiService.makeRequest('/api/about', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const data = await apiService.getAdminAbout(token);
       setFormData({
         title: data.about.title || '',
         intro: data.about.intro || '',
         mission: data.about.mission || '',
         vision: data.about.vision || '',
+        brandPrinciplesSubtitle: data.about.brandPrinciplesSubtitle || '',
         principles: data.about.principles || [],
         milestones: data.about.milestones || []
       });
@@ -745,20 +782,11 @@ function AdminAbout({ user }: { user: User }) {
     setSaving(true);
     try {
       const token = localStorage.getItem('admin_token');
-      const response = await fetch('/api/about', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+      await apiService.updateAbout(token, formData);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+      // Refresh the form data from server after successful update
+      await fetchAboutData();
 
-      await response.json();
       alert('資料更新成功！');
     } catch (error) {
       console.error('Failed to update about data:', error);
@@ -874,6 +902,16 @@ function AdminAbout({ user }: { user: User }) {
                 onChange={(e) => setFormData({ ...formData, vision: e.target.value })}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                 placeholder="輸入公司願景..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">品牌理念副標題</label>
+              <input
+                type="text"
+                value={formData.brandPrinciplesSubtitle || ''}
+                onChange={(e) => setFormData({ ...formData, brandPrinciplesSubtitle: e.target.value })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                placeholder="輸入品牌理念副標題（首頁品牌理念區塊使用）..."
               />
             </div>
           </div>
@@ -1014,12 +1052,7 @@ function AdminContacts({ user }: { user: User }) {
         return;
       }
 
-      const data = await apiService.makeRequest('/api/contacts', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const data = await apiService.getContacts(token);
       setContacts(data.contacts || []);
     } catch (error) {
       console.error('Failed to fetch contacts:', error);
@@ -1119,7 +1152,7 @@ function AdminContacts({ user }: { user: User }) {
       await Promise.all(updatePromises);
 
       // Create CSV content
-      const csvHeaders = ['ID', '姓名', '電話', 'Email', '專案類型', '訊息', '狀態', '建立時間'];
+      const csvHeaders = ['ID', '姓名', '電話', 'Email', '建案類型', '訊息', '狀態', '建立時間'];
       const csvRows = contacts.map(contact => [
         contact.id,
         contact.name,
@@ -1537,7 +1570,7 @@ function ProjectModal({ project, onClose, onSave }: {
       onSave(data.project);
     } catch (error) {
       console.error('Failed to save project:', error);
-      setError('儲存專案失敗，請稍後再試');
+      setError('儲存建案失敗，請稍後再試');
     } finally {
       setSaving(false);
     }
@@ -1566,7 +1599,7 @@ function ProjectModal({ project, onClose, onSave }: {
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-primary-600">
-              {project ? '編輯專案' : '新增專案'}
+              {project ? '編輯建案' : '新增建案'}
             </h2>
             <button
               onClick={onClose}
@@ -1588,14 +1621,14 @@ function ProjectModal({ project, onClose, onSave }: {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  專案標題 *
+                  建案標題 *
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => handleChange('title', e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="請輸入專案標題"
+                  placeholder="請輸入建案標題"
                   required
                 />
               </div>
@@ -1666,7 +1699,7 @@ function ProjectModal({ project, onClose, onSave }: {
                 onChange={(e) => handleChange('summary', e.target.value)}
                 rows={3}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                placeholder="請輸入專案簡介"
+                placeholder="請輸入建案簡介"
                 required
               />
             </div>
@@ -1680,7 +1713,7 @@ function ProjectModal({ project, onClose, onSave }: {
                 onChange={(e) => handleChange('description', e.target.value)}
                 rows={4}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                placeholder="請輸入專案詳細描述"
+                placeholder="請輸入建案詳細描述"
               />
             </div>
 
@@ -1709,7 +1742,7 @@ function ProjectModal({ project, onClose, onSave }: {
                 disabled={saving}
                 className="px-6 py-2 bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {saving ? '儲存中...' : (project ? '更新專案' : '建立專案')}
+                {saving ? '儲存中...' : (project ? '更新建案' : '建立建案')}
               </button>
             </div>
           </form>
