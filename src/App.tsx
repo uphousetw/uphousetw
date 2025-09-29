@@ -37,13 +37,13 @@ function AppContent() {
         } />
         <Route path="projects" element={
           <>
-            <SEO title="專案列表" description="瀏覽我們完成的各類建築專案，包含透天、華廈、電梯大樓等" />
+            <SEO title="建案列表" description="瀏覽我們完成的各類建築建案，包含透天、華廈、電梯大樓等" />
             <Projects />
           </>
         } />
         <Route path="projects/:slug" element={
           <>
-            <SEO title="專案詳情" />
+            <SEO title="建案詳情" />
             <ProjectDetail />
           </>
         } />

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { apiService } from '../services/apiService';
 
 interface ContactForm {
   name: string;
@@ -68,35 +69,23 @@ export default function Contact() {
     };
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(submitData)
+      await apiService.submitContact(submitData);
+
+      setShowSuccess(true);
+
+      // Reset form
+      setForm({
+        name: '',
+        phone: '',
+        email: '',
+        project: '電梯大樓',
+        message: ''
       });
+      setFocusedFields(new Set());
 
-      const data = await response.json();
+      // Hide success message after 5 seconds
+      setTimeout(() => setShowSuccess(false), 5000);
 
-      if (response.ok) {
-        setShowSuccess(true);
-
-        // Reset form
-        setForm({
-          name: '',
-          phone: '',
-          email: '',
-          project: '電梯大樓',
-          message: ''
-        });
-        setFocusedFields(new Set());
-
-        // Hide success message after 5 seconds
-        setTimeout(() => setShowSuccess(false), 5000);
-      } else {
-        console.error('Form submission failed:', data);
-        // You could set an error state here to show error message to user
-      }
     } catch (error) {
       console.error('Error submitting form:', error);
       // You could set an error state here to show error message to user
@@ -119,7 +108,7 @@ export default function Contact() {
             聯絡我們
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            準備開始您的建設項目？聯絡我們的專業團隊
+            打造屬於您的理想生活
           </p>
           <div className="w-24 h-1 bg-primary-600 mx-auto mt-6"></div>
         </motion.div>
@@ -188,7 +177,7 @@ export default function Contact() {
                 {/* Project Type */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    專案項目 <span className="text-red-500">*</span>
+                    建案項目 <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="project"
@@ -279,7 +268,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">地址</p>
-                    <p className="text-gray-600">台北市中正區範例路123號</p>
+                    <p className="text-gray-600">苗栗縣竹南鎮康德街71號</p>
                   </div>
                 </div>
 
@@ -289,7 +278,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">電話</p>
-                    <p className="text-gray-600">(02) 2345-6789</p>
+                    <p className="text-gray-600">(03) 777-5355</p>
                   </div>
                 </div>
 
@@ -299,7 +288,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">Email</p>
-                    <p className="text-gray-600">info@example.com</p>
+                    <p className="text-gray-600">info@uphousetw.com</p>
                   </div>
                 </div>
 
@@ -310,7 +299,7 @@ export default function Contact() {
                   <div>
                     <p className="font-medium text-gray-900">營業時間</p>
                     <p className="text-gray-600">週一至週五 9:00 - 18:00</p>
-                    <p className="text-gray-600">週六 9:00 - 12:00</p>
+                    
                   </div>
                 </div>
               </div>
@@ -343,7 +332,7 @@ export default function Contact() {
             個人資料使用說明
           </h4>
           <p className="text-gray-600 text-sm leading-relaxed">
-            您所提供的個人資料將僅用於回覆您的諮詢需求與提供專案資訊。我們承諾保護您的個人隱私，
+            您所提供的個人資料將僅用於回覆您的諮詢需求與提供建案資訊。我們承諾保護您的個人隱私，
             不會將您的資料用於其他目的或提供給第三方。詳細的隱私權政策請參考我們的
             <a href="/privacy" className="text-primary-600 hover:text-primary-700 mx-1">隱私權政策</a>
             頁面。

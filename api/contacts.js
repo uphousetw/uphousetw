@@ -1,14 +1,11 @@
 // Contacts management API for admin functions - Vercel
-import jwt from 'jsonwebtoken';
 import {
   getAllContacts,
   getContactById,
   updateContact,
   deleteContact
 } from './data/contacts.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const ADMIN_EMAILS = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',') : ['admin@example.com'];
+import { requireAuth, logAdminAction } from './utils/auth.js';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -21,30 +18,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Verify admin authentication
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'Authorization header missing' });
+    // Secure authentication check
+    const auth = requireAuth(req, res);
+    if (!auth.valid) {
+      return; // Response already sent by requireAuth
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    let decoded;
-
-    // Handle demo token for testing
-    if (token === 'demo-token') {
-      decoded = { email: 'demo@uphousetw.com', role: 'admin' };
-    } else {
-      try {
-        decoded = jwt.verify(token, JWT_SECRET);
-      } catch (error) {
-        return res.status(401).json({ error: 'Invalid or expired token' });
-      }
-    }
-
-    // Check if user is admin
-    if (!ADMIN_EMAILS.includes(decoded.email)) {
-      return res.status(403).json({ error: 'Access denied - admin required' });
-    }
+    const user = req.user;
 
     // Get contact ID from query params
     const contactId = req.query.id;

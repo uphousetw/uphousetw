@@ -4,13 +4,14 @@
  * Eliminates frontend-backend alignment issues
  */
 import type { Project, AboutUs, ContactMessage, SiteConfig, ApiError } from '../types/apiTypes';
+import { apiConfig } from '../config/api';
 
 class ApiService {
   private baseUrl: string;
 
   constructor() {
-    // Use current domain for API calls (works with Netlify/Vercel)
-    this.baseUrl = window.location.origin;
+    // Use our environment-aware API configuration
+    this.baseUrl = apiConfig.baseUrl;
   }
 
   /**
@@ -109,7 +110,7 @@ class ApiService {
    * Update existing project
    */
   async updateProject(token: string, id: string, data: Partial<Project>): Promise<{ project: Project }> {
-    return this.makeRequest(`projects/${id}`, {
+    return this.makeRequest(`projects?id=${id}`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,

@@ -227,7 +227,7 @@
     </div>
 
     <div class="section">
-        <h2>📋 專案概述</h2>
+        <h2>📋 建案概述</h2>
         <p>這是一個基於 React 和 TypeScript 的現代化建設公司作品集網站，採用 Serverless 架構部署於 Netlify。<strong>目前前台功能已完成，後台管理系統還在開發階段。</strong></p>
 
         <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 8px; padding: 15px; margin: 15px 0;">
@@ -302,7 +302,7 @@
     </div>
 
     <div class="section page-break">
-        <h2>📁 專案結構</h2>
+        <h2>📁 建案結構</h2>
 
         <div class="file-tree">
 Uphousev2/
@@ -318,8 +318,8 @@ Uphousev2/
 │   ├── 📁 pages/               # 頁面組件
 │   │   ├── Home.tsx            # 首頁
 │   │   ├── About.tsx           # 關於我們
-│   │   ├── Projects.tsx        # 專案列表
-│   │   ├── ProjectDetail.tsx   # 專案詳情
+│   │   ├── Projects.tsx        # 建案列表
+│   │   ├── ProjectDetail.tsx   # 建案詳情
 │   │   ├── Contact.tsx         # 聯絡我們
 │   │   ├── Admin.tsx           # 後台管理
 │   │   ├── PrivacyPolicy.tsx   # 隱私權政策
@@ -339,7 +339,7 @@ Uphousev2/
 ├── 📄 tailwind.config.js       # Tailwind 配置
 ├── 📄 vite.config.ts           # Vite 建構配置
 ├── 📄 netlify.toml            # Netlify 部署配置
-├── 📄 README.md               # 專案說明
+├── 📄 README.md               # 建案說明
 └── 📄 PRD.md                  # 產品需求文件
         </div>
     </div>
@@ -392,7 +392,7 @@ Uphousev2/
                 <h4>Home.tsx</h4>
                 <div class="path">src/pages/Home.tsx</div>
                 <div class="description">
-                    首頁組件，包含 Hero 區塊、服務介紹、精選專案展示和 CTA 呼籲行動。
+                    首頁組件，包含 Hero 區塊、服務介紹、精選建案展示和 CTA 呼籲行動。
                 </div>
             </div>
 
@@ -400,7 +400,7 @@ Uphousev2/
                 <h4>Projects.tsx</h4>
                 <div class="path">src/pages/Projects.tsx</div>
                 <div class="description">
-                    專案列表頁面，提供專案篩選（類別、年份）和排序功能，支援響應式網格布局。
+                    建案列表頁面，提供建案篩選（類別、年份）和排序功能，支援響應式網格布局。
                 </div>
             </div>
 
@@ -408,7 +408,7 @@ Uphousev2/
                 <h4>ProjectDetail.tsx</h4>
                 <div class="path">src/pages/ProjectDetail.tsx</div>
                 <div class="description">
-                    專案詳情頁面，顯示專案完整資訊包含封面圖、詳細資料和內文描述。
+                    建案詳情頁面，顯示建案完整資訊包含封面圖、詳細資料和內文描述。
                 </div>
             </div>
 
@@ -433,23 +433,23 @@ Uphousev2/
     <div class="section page-break">
         <h2>📊 資料模型設計</h2>
 
-        <h3>Project 專案模型</h3>
+        <h3>Project 建案模型</h3>
         <div class="data-model">
 {
-  "slug": "default-project",           // 專案唯一識別碼
-  "title": "範例建案",                 // 專案標題
+  "slug": "default-project",           // 建案唯一識別碼
+  "title": "範例建案",                 // 建案標題
   "category": "透天",                  // 類別：透天/華廈/電梯大樓/其他
   "year": 2025,                       // 建案年份
   "location": "台北市中正區",          // 建案地點
-  "summary": "專案簡介...",            // 專案摘要
+  "summary": "建案簡介...",            // 建案摘要
   "coverUrl": "https://...",          // 封面圖片 URL
-  "facts": {                          // 專案詳細資料
+  "facts": {                          // 建案詳細資料
     "地點": "台北市中正區",
     "類別": "透天",
     "年份": "2025",
     "完工日": "2025-12-31"
   },
-  "body": "專案內文描述..."           // 專案詳細說明
+  "body": "建案內文描述..."           // 建案詳細說明
 }
         </div>
 
@@ -458,7 +458,7 @@ Uphousev2/
 {
   "title": "關於我們",
   "intro": "公司簡介內容...",          // 公司介紹
-  "principles": [                     // 經營理念
+  "principles": [                     // 品牌理念
     "品質與安全",
     "準時交付",
     "透明溝通"
@@ -478,7 +478,7 @@ Uphousev2/
   "name": "王大名",                    // 聯絡人姓名（必填）
   "phone": "0932-123456",             // 聯絡電話（必填）
   "email": "example@mail.com",        // Email（選填）
-  "project": "電梯大樓",              // 感興趣的專案類型（必填）
+  "project": "電梯大樓",              // 感興趣的建案類型（必填）
   "message": "詢問內容...",           // 訊息內容（必填）
   "createdAt": "2025-09-25T08:00:00Z" // 建立時間
 }
@@ -527,7 +527,7 @@ Uphousev2/
         <div class="api-endpoint" style="opacity: 0.6; border-left: 4px solid #f59e0b;">
             <span class="method">GET/POST/PUT/DELETE</span>
             <span class="url">/.netlify/functions/projects</span>
-            <p>專案 CRUD 管理 (待實作)</p>
+            <p>建案 CRUD 管理 (待實作)</p>
         </div>
 
         <div class="api-endpoint" style="opacity: 0.6; border-left: 4px solid #f59e0b;">
@@ -607,7 +607,7 @@ Uphousev2/
         <ul>
             <li><span class="code">page_view</span> - 頁面瀏覽追蹤</li>
             <li><span class="code">contact_form_submit</span> - 聯絡表單提交</li>
-            <li><span class="code">project_view</span> - 專案詳情查看</li>
+            <li><span class="code">project_view</span> - 建案詳情查看</li>
             <li><span class="code">navigation_click</span> - 導航點擊追蹤</li>
         </ul>
 
@@ -718,7 +718,7 @@ ADMIN_EMAILS=admin@company.com,manager@company.com
 
         <h3>開發環境設定</h3>
         <div class="data-model">
-# 複製專案
+# 複製建案
 git clone https://github.com/uphousetw/uphousetw.git
 cd uphousetw
 
@@ -752,7 +752,7 @@ npm run type-check
         <ol>
             <li>登入後台管理系統 (<span class="code">/admin</span>)</li>
             <li>使用 Google OAuth 或 Magic Link 驗證身份</li>
-            <li>編輯專案、關於我們等內容</li>
+            <li>編輯建案、關於我們等內容</li>
             <li>上傳圖片到雲端儲存</li>
             <li>儲存變更並觸發自動部署</li>
             <li>確認前台內容更新成功</li>
@@ -805,7 +805,7 @@ npm run type-check
         <ul>
             <li><span class="highlight">PRD.md</span> - 完整產品需求文件</li>
             <li><span class="highlight">README.md</span> - 快速開始指南</li>
-            <li><span class="highlight">package.json</span> - 專案依賴和腳本</li>
+            <li><span class="highlight">package.json</span> - 建案依賴和腳本</li>
             <li><span class="highlight">.env.example</span> - 環境變數範例</li>
         </ul>
     </div>
@@ -815,10 +815,10 @@ npm run type-check
 
         <h3>前台功能</h3>
         <div class="feature-list">
-            <div class="feature-item">✅ 首頁 Hero + 服務優勢 + 精選專案</div>
+            <div class="feature-item">✅ 首頁 Hero + 服務優勢 + 精選建案</div>
             <div class="feature-item">✅ 關於我們頁面（簡介 + 理念 + 歷程）</div>
-            <div class="feature-item">✅ 專案列表（篩選 + 排序）</div>
-            <div class="feature-item">✅ 專案詳情頁面</div>
+            <div class="feature-item">✅ 建案列表（篩選 + 排序）</div>
+            <div class="feature-item">✅ 建案詳情頁面</div>
             <div class="feature-item">✅ 聯絡表單（必填預設值）</div>
             <div class="feature-item">✅ 隱私權政策 + 免責聲明連結</div>
         </div>
@@ -855,7 +855,7 @@ npm run type-check
         <p style="color: #64748b; margin: 0;">
             <strong>文件版本：</strong> 1.0 |
             <strong>更新日期：</strong> 2025-09-25 |
-            <strong>專案：</strong> 建設公司 Portfolio 網站
+            <strong>建案：</strong> 建設公司 Portfolio 網站
         </p>
     </div>
 </body>

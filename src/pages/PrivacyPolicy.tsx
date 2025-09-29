@@ -31,15 +31,15 @@ export default function PrivacyPolicy() {
               <li>姓名或公司名稱（必填）</li>
               <li>聯絡電話（必填）</li>
               <li>電子信箱（選填）</li>
-              <li>專案需求資訊（必填）</li>
+              <li>建案需求資訊（必填）</li>
             </ul>
 
             <h3>2. 蒐集目的</h3>
             <p>蒐集您的個人資料主要用於：</p>
             <ul>
               <li>回覆您的諮詢需求</li>
-              <li>提供建設專案相關資訊</li>
-              <li>後續專案評估與報價服務</li>
+              <li>提供建設建案相關資訊</li>
+              <li>後續建案評估與報價服務</li>
               <li>客戶服務與售後支援</li>
             </ul>
 
@@ -85,9 +85,9 @@ export default function PrivacyPolicy() {
             <p>如您對個人資料處理有任何疑問或希望行使上述權利，請聯絡我們：</p>
             <div className="bg-gray-50 p-4 rounded">
               <p><strong>個資查詢專責窗口</strong></p>
-              <p>電話：(02) 2345-6789</p>
+              <p>電話：(03) 777-5355</p>
               <p>Email：privacy@example.com</p>
-              <p>地址：台北市中正區範例路123號</p>
+              <p>地址：苗栗縣竹南鎮康德街71號</p>
             </div>
 
             <h3>9. 政策更新</h3>

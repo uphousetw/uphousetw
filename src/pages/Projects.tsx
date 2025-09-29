@@ -22,18 +22,23 @@ export default function Projects() {
         const data = await response.json();
         const apiProjects = data.projects || [];
 
-        // Convert API data to Project format
+        // Convert API data to Project format with safe defaults
         const formattedProjects: Project[] = apiProjects.map((project: any) => ({
-          slug: project.slug,
-          title: project.title,
-          category: project.category,
-          year: project.year,
-          location: project.location,
-          summary: project.summary,
-          description: project.description || project.summary,
-          coverUrl: project.coverUrl,
-          images: project.images || [project.coverUrl],
-          facts: project.facts,
+          slug: project.slug || `project-${project.id}`,
+          title: project.title || 'Untitled Project',
+          category: project.category || '其他',
+          year: project.year || new Date().getFullYear(),
+          location: project.location || '位置未定',
+          summary: project.summary || project.description || '暫無描述',
+          description: project.description || project.summary || '暫無詳細描述',
+          coverUrl: project.coverUrl || 'https://via.placeholder.com/400x300?text=No+Image',
+          images: project.images || (project.coverUrl ? [project.coverUrl] : []),
+          facts: project.facts || {
+            地點: project.location || '位置未定',
+            類別: project.category || '其他',
+            年份: (project.year || new Date().getFullYear()).toString(),
+            完工日: project.facts?.完工日 || new Date().toISOString().split('T')[0]
+          },
           timeline: [],
           challenges: [],
           solutions: []
@@ -70,8 +75,10 @@ export default function Projects() {
       if (sortBy === 'latest') {
         return b.year - a.year;
       } else {
-        // Sort by completion date
-        return new Date(b.facts.完工日).getTime() - new Date(a.facts.完工日).getTime();
+        // Sort by completion date with safe access
+        const dateA = a.facts?.完工日 ? new Date(a.facts.完工日).getTime() : 0;
+        const dateB = b.facts?.完工日 ? new Date(b.facts.完工日).getTime() : 0;
+        return dateB - dateA;
       }
     });
 
@@ -92,7 +99,7 @@ export default function Projects() {
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            專案列表
+            建案列表
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             探索我們完成的各類建築項目
@@ -213,7 +220,7 @@ export default function Projects() {
           >
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              找不到符合條件的專案
+              找不到符合條件的建案
             </h3>
             <p className="text-gray-600">
               請試試調整篩選條件

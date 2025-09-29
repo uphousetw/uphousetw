@@ -1,9 +1,6 @@
 // About us management API for admin functions - Vercel
-import jwt from 'jsonwebtoken';
 import { getAboutData, updateAboutData } from './data/about.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const ADMIN_EMAILS = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',') : ['admin@example.com'];
+import { requireAuth, logAdminAction } from './utils/auth.js';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -11,35 +8,23 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
 
+  // Cache-busting headers to ensure fresh data
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   try {
-    // Verify admin authentication
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'Authorization header missing' });
+    // Secure authentication check
+    const auth = requireAuth(req, res);
+    if (!auth.valid) {
+      return; // Response already sent by requireAuth
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    let decoded;
-
-    // Handle demo token for testing
-    if (token === 'demo-token') {
-      decoded = { email: 'demo@uphousetw.com', role: 'admin' };
-    } else {
-      try {
-        decoded = jwt.verify(token, JWT_SECRET);
-      } catch (error) {
-        return res.status(401).json({ error: 'Invalid or expired token' });
-      }
-    }
-
-    // Check if user is admin
-    if (!ADMIN_EMAILS.includes(decoded.email)) {
-      return res.status(403).json({ error: 'Access denied - admin required' });
-    }
+    const user = req.user;
 
     switch (req.method) {
       case 'GET':
@@ -47,6 +32,9 @@ export default async function handler(req, res) {
         return res.status(200).json({ about: aboutData });
 
       case 'PUT':
+        console.log('🔍 DEBUG - Raw request body:', req.body);
+        console.log('🔍 DEBUG - Request headers:', req.headers);
+
         const updateData = req.body;
         const updatedAbout = await updateAboutData(updateData);
 

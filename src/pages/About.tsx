@@ -1,24 +1,22 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { defaultAboutUs } from '../data/defaultData';
+import { apiService } from '../services/apiService';
+import type { AboutUs } from '../types/apiTypes';
 
 export default function About() {
-  const [aboutData, setAboutData] = useState(defaultAboutUs);
+  const [aboutData, setAboutData] = useState<AboutUs | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAboutData = async () => {
       try {
-        const response = await fetch('/api/about-public');
-        if (response.ok) {
-          const data = await response.json();
-          setAboutData(data.about);
-        } else {
-          console.log('Using fallback about data');
-        }
+        const response = await apiService.getPublicAbout();
+        setAboutData(response.about);
+        setError(null);
       } catch (error) {
         console.error('Failed to fetch about data:', error);
-        console.log('Using fallback about data');
+        setError('無法載入關於我們的資料，請稍後再試。');
       } finally {
         setLoading(false);
       }
@@ -33,6 +31,24 @@ export default function About() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-gray-600">載入中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !aboutData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">載入失敗</h2>
+          <p className="text-gray-600 mb-4">{error || '無法載入關於我們的資料'}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700"
+          >
+            重新載入
+          </button>
         </div>
       </div>
     );
@@ -65,10 +81,6 @@ export default function About() {
           <div className="prose prose-lg max-w-none">
             <p className="text-gray-600 leading-relaxed">
               {aboutData.intro}
-            </p>
-            <p className="text-gray-600 leading-relaxed mt-4">
-              我們擁有經驗豐富的建築團隊和先進的施工技術，從規劃設計到施工完成，
-              每個環節都嚴格把關，確保為客戶提供最優質的建築服務。
             </p>
           </div>
         </motion.section>
@@ -115,44 +127,35 @@ export default function About() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">品牌理念</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            {aboutData.brandPrinciplesSubtitle || '品牌理念'}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {aboutData.principles?.map((principle, index) => (
               <div
-                key={typeof principle === 'string' ? principle : principle.title || index}
+                key={principle.title || index}
                 className="bg-white p-6 rounded-lg shadow-md border-l-4 border-primary-600"
               >
-                {typeof principle === 'string' ? (
-                  <>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                      {principle}
-                    </h3>
-                    <p className="text-gray-600 text-sm">
-                      {getPrincipleDescription(principle)}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center mb-3">
-                      <span className="text-2xl mr-3">{principle.icon || '✨'}</span>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {principle.title}
-                      </h3>
-                    </div>
-                    <p className="text-gray-600 text-sm">
-                      {principle.description}
-                    </p>
-                  </>
-                )}
+                <div className="flex items-center mb-3">
+                  <span className="text-2xl mr-3">{principle.icon || '✨'}</span>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {principle.title}
+                  </h3>
+                </div>
+                <p className="text-gray-600 text-sm">
+                  {principle.description}
+                </p>
               </div>
             ))}
           </div>
         </motion.section>
 
 
+
         {/* Milestones */}
         {aboutData.milestones && aboutData.milestones.length > 0 && (
           <motion.section
+            className="mb-16"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
@@ -189,16 +192,8 @@ export default function About() {
             </div>
           </motion.section>
         )}
+
       </div>
     </div>
   );
-}
-
-function getPrincipleDescription(principle: string): string {
-  const descriptions: Record<string, string> = {
-    '品質與安全': '嚴格遵循建築法規，採用優質材料，確保每個建案的安全性與耐久性。',
-    '準時交付': '專業的項目管理團隊，精確控制施工進度，承諾按期完工交付。',
-    '透明溝通': '與客戶保持密切溝通，定期回報工程進度，確保客戶了解項目狀況。'
-  };
-  return descriptions[principle] || '';
 }

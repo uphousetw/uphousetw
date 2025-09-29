@@ -19,7 +19,8 @@ export const defaultProject: Project = {
 
 export const defaultAboutUs: AboutUs = {
   title: "關於我們",
-  intro: "本公司專注於住宅與商辦建設，致力於品質、安全與準時交付。",
+  intro: "美感空間，建設城市願景",
+  brandPrinciplesSubtitle: "美感中築夢，品質中紮根",
   principles: ["品質與安全", "準時交付", "透明溝通"],
   milestones: [
     { year: 2019, event: "公司成立" }

@@ -20,6 +20,7 @@ export interface AboutUs {
   intro: string;
   mission?: string;
   vision?: string;
+  brandPrinciplesSubtitle?: string;
   principles: (string | {
     icon?: string;
     title: string;
@@ -29,6 +30,24 @@ export interface AboutUs {
     year: number;
     event: string;
   }[];
+}
+
+export interface GalleryImage {
+  id: string;
+  publicId: string;
+  title: string;
+  description?: string;
+  category?: string;
+  order: number;
+  createdAt: string;
+}
+
+export interface SiteConfig {
+  logo: string; // Cloudinary public ID
+  favicon: string; // Cloudinary public ID
+  companyName: string;
+  gallery: GalleryImage[];
+  updatedAt: string;
 }
 
 export interface ContactMessage {

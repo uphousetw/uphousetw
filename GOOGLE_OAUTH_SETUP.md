@@ -2,10 +2,10 @@
 
 ## 1. Google Cloud Console 設定
 
-### 步驟 1: 建立 Google Cloud 專案
+### 步驟 1: 建立 Google Cloud 建案
 1. 前往 [Google Cloud Console](https://console.cloud.google.com/)
-2. 建立新專案或選擇現有專案
-3. 記錄專案 ID
+2. 建立新建案或選擇現有建案
+3. 記錄建案 ID
 
 ### 步驟 2: 啟用 Google+ API
 1. 在 Google Cloud Console 中，前往「API 和服務」→「程式庫」

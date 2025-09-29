@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git init:*)",
+      "Bash(PORT=3001 node dev-server.js)",
+      "Bash(node:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
       "Bash(git add:*)"
     ],
     "deny": [],

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { AdminGallery, AdminSettings } from '../components/AdminComponents';
+import ImageSelector from '../components/ImageSelector';
 import { isDemoModeAvailable, DEMO_CONFIG, validateEnvironment } from '../config/environment';
 import {
   Building2,
@@ -20,7 +21,8 @@ import {
   CheckCircle,
   Clock,
   Image as ImageIcon,
-  Settings
+  Settings,
+  X
 } from 'lucide-react';
 
 interface User {
@@ -782,6 +784,7 @@ function AdminAbout({ user }: { user: User }) {
     setSaving(true);
     try {
       const token = localStorage.getItem('admin_token');
+      if (!token) throw new Error('No authentication token');
       await apiService.updateAbout(token, formData);
 
       // Refresh the form data from server after successful update
@@ -1078,7 +1081,7 @@ function AdminContacts({ user }: { user: User }) {
     setDeleting(contactId);
     try {
       const token = localStorage.getItem('admin_token');
-      const response = await fetch(`/api/contacts/${contactId}`, {
+      const response = await fetch(`/api/contacts?id=${contactId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1104,7 +1107,7 @@ function AdminContacts({ user }: { user: User }) {
     setUpdating(contactId);
     try {
       const token = localStorage.getItem('admin_token');
-      const response = await fetch(`/api/contacts/${contactId}`, {
+      const response = await fetch(`/api/contacts?id=${contactId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1139,7 +1142,7 @@ function AdminContacts({ user }: { user: User }) {
       const updatePromises = contacts
         .filter(c => c.status === 'new')
         .map(contact =>
-          fetch(`/api/contacts/${contact.id}`, {
+          fetch(`/api/contacts?id=${contact.id}`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -1519,6 +1522,7 @@ function ProjectModal({ project, onClose, onSave }: {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showImageSelector, setShowImageSelector] = useState(false);
 
   const categories = ['透天', '華廈', '電梯大樓', '其他'];
 
@@ -1536,11 +1540,9 @@ function ProjectModal({ project, onClose, onSave }: {
 
     try {
       const token = localStorage.getItem('admin_token');
-      const url = project
-        ? `/api/projects/${project.id}`
-        : '/api/projects';
-
-      const method = project ? 'PUT' : 'POST';
+      if (!token) {
+        throw new Error('No authentication token');
+      }
 
       // Update facts based on form data
       const updatedFormData = {
@@ -1553,20 +1555,15 @@ function ProjectModal({ project, onClose, onSave }: {
         }
       };
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updatedFormData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      let data;
+      if (project) {
+        // Update existing project
+        data = await apiService.updateProject(token, project.id, updatedFormData);
+      } else {
+        // Create new project
+        data = await apiService.createProject(token, updatedFormData);
       }
 
-      const data = await response.json();
       onSave(data.project);
     } catch (error) {
       console.error('Failed to save project:', error);
@@ -1591,6 +1588,14 @@ function ProjectModal({ project, onClose, onSave }: {
         [fact]: value
       }
     }));
+  };
+
+  const handleImageSelect = (imageUrl: string, _publicId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      coverUrl: imageUrl
+    }));
+    setShowImageSelector(false);
   };
 
   return (
@@ -1679,15 +1684,43 @@ function ProjectModal({ project, onClose, onSave }: {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                封面圖片網址
+                封面圖片
               </label>
-              <input
-                type="url"
-                value={formData.coverUrl}
-                onChange={(e) => handleChange('coverUrl', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                placeholder="https://example.com/image.jpg"
-              />
+              <div className="space-y-3">
+                {formData.coverUrl && (
+                  <div className="relative inline-block">
+                    <img
+                      src={formData.coverUrl}
+                      alt="封面圖片預覽"
+                      className="w-32 h-32 object-cover rounded-lg border border-gray-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleChange('coverUrl', '')}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowImageSelector(true)}
+                    className="bg-secondary-400 text-primary-600 px-4 py-2 rounded-lg hover:bg-secondary-500 transition-colors flex items-center space-x-2"
+                  >
+                    <ImageIcon size={16} />
+                    <span>從圖片庫選擇</span>
+                  </button>
+                  <input
+                    type="url"
+                    value={formData.coverUrl}
+                    onChange={(e) => handleChange('coverUrl', e.target.value)}
+                    className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    placeholder="或輸入圖片網址"
+                  />
+                </div>
+              </div>
             </div>
 
             <div>
@@ -1748,6 +1781,15 @@ function ProjectModal({ project, onClose, onSave }: {
           </form>
         </div>
       </div>
+
+      {/* Image Selector Modal */}
+      {showImageSelector && (
+        <ImageSelector
+          onSelect={handleImageSelect}
+          onClose={() => setShowImageSelector(false)}
+          currentImageUrl={formData.coverUrl}
+        />
+      )}
     </div>
   );
 }

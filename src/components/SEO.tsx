@@ -11,8 +11,8 @@ interface SEOProps {
 export default function SEO({ title, description, image, type = 'website' }: SEOProps) {
   const location = useLocation();
 
-  const siteName = '建設公司 Portfolio';
-  const defaultDescription = '專業建設團隊，提供透天、華廈、電梯大樓等多樣化住宅建設服務';
+  const siteName = '向上建設';
+  const defaultDescription = '專營苗栗後龍高鐵特區的建設公司';
   const defaultImage = '/og-image.jpg'; // You would add this image to public folder
   const siteUrl = import.meta.env.VITE_SITE_URL || 'https://example.com';
 

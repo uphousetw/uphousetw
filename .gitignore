@@ -29,6 +29,17 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+.env.development
+.env.production
+
+# API Keys and Secrets
+.cloudinary
+config/secrets.js
+config/secrets.json
+**/secrets/**
+**/*secret*
+**/*key*
+**/*credential*
 
 # Netlify
 .netlify

@@ -110,6 +110,73 @@ console.log('🔍 DEBUG - Request headers:', req.headers);
 
 ---
 
-**Last Updated**: 2025-09-28
-**Severity**: Critical - affects all data persistence
+## Critical Issue: API URL Parameter Mismatch
+
+### ⚠️ Symptoms
+- Admin panel shows "儲存建案失敗，請稍後再試" (Project save failed)
+- Admin panel shows "狀態更新失敗，請稍後再試" (Status update failed)
+- Contact message deletion fails silently
+- Contact status updates don't work
+- Error messages: "Project ID required for update", "Contact ID required for update"
+
+### 🔍 Root Cause
+Frontend sends API requests using **path parameters** (`/api/projects/${id}`) but backend expects **query parameters** (`/api/projects?id=${id}`). This mismatch causes 400 Bad Request errors.
+
+### 🛠️ Fix Required
+**ALWAYS** use query parameters for resource IDs, not path parameters.
+
+#### ❌ Incorrect (Path Parameters)
+```typescript
+// Projects
+this.makeRequest(`projects/${id}`, { method: 'PUT' })     // ❌
+this.makeRequest(`projects/${id}`, { method: 'DELETE' })  // ❌
+
+// Contacts
+fetch(`/api/contacts/${contactId}`, { method: 'PUT' })    // ❌
+fetch(`/api/contacts/${contactId}`, { method: 'DELETE' }) // ❌
+```
+
+#### ✅ Correct (Query Parameters)
+```typescript
+// Projects
+this.makeRequest(`projects?id=${id}`, { method: 'PUT' })     // ✅
+this.makeRequest(`projects?id=${id}`, { method: 'DELETE' })  // ✅
+
+// Contacts
+fetch(`/api/contacts?id=${contactId}`, { method: 'PUT' })    // ✅
+fetch(`/api/contacts?id=${contactId}`, { method: 'DELETE' }) // ✅
+```
+
+### 🧪 How to Test
+1. **Admin Panel**: Try editing projects - should succeed without errors
+2. **Contact Management**: Try updating contact status - should work
+3. **Contact Deletion**: Try deleting contacts - should work
+4. **Network Tab**: Check API calls use `?id=` format
+5. **Console**: No "Project ID required" or "Contact ID required" errors
+
+### 🚨 All Affected Endpoints
+Fixed in these locations:
+- `src/services/apiService.ts` - `updateProject()` method
+- `src/pages/Admin.tsx` - `handleDeleteContact()` function
+- `src/pages/Admin.tsx` - `handleUpdateStatus()` function
+- `src/pages/Admin.tsx` - CSV export contact updates
+
+### 📝 QA Checklist
+- [ ] Project editing works in admin panel
+- [ ] Contact status updates work (新訊息 → 已讀 → 已處理 → 已解決)
+- [ ] Contact deletion works
+- [ ] CSV export works and updates contact status
+- [ ] Network tab shows `?id=` format for PUT/DELETE requests
+- [ ] No "ID required" error messages in console
+
+### 📅 Historical Context
+- **Issue Discovered**: 2025-09-29
+- **Affected Systems**: Admin panel project management, contact management
+- **Resolution**: Changed all frontend API calls from path to query parameters
+- **Files Changed**: `src/services/apiService.ts`, `src/pages/Admin.tsx`
+
+---
+
+**Last Updated**: 2025-09-29
+**Severity**: Critical - affects all admin functionality
 **Priority**: P0 - Must fix before deployment

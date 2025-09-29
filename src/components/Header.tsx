@@ -1,14 +1,36 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getCloudinaryUrl, defaultImages } from '../config/cloudinary';
 
 export default function Header() {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [siteConfig, setSiteConfig] = useState({
+    logo: defaultImages.logo,
+    companyName: '向上建設'
+  });
+
+  useEffect(() => {
+    // Fetch site configuration including logo
+    const fetchSiteConfig = async () => {
+      try {
+        const response = await fetch('/api/site-config');
+        if (response.ok) {
+          const data = await response.json();
+          setSiteConfig(data.config);
+        }
+      } catch (error) {
+        console.log('Using default site config');
+      }
+    };
+
+    fetchSiteConfig();
+  }, []);
 
   const navItems = [
     { path: '/', label: '首頁' },
     { path: '/about', label: '關於我們' },
-    { path: '/projects', label: '專案列表' },
+    { path: '/projects', label: '建案列表' },
     { path: '/contact', label: '聯絡我們' },
   ];
 
@@ -17,8 +39,17 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-primary-600">
-            建設公司
+          <Link to="/" className="flex items-center space-x-3">
+            <img
+              src={getCloudinaryUrl(siteConfig.logo, 'logo')}
+              alt="Logo"
+              className="h-10 w-auto"
+              onError={(e) => {
+                // Fallback to default logo if Cloudinary image fails
+                (e.target as HTMLImageElement).src = "/images/logo/icon_uphouse.jpg";
+              }}
+            />
+            <span className="text-2xl font-bold text-primary-600">{siteConfig.companyName}</span>
           </Link>
 
           {/* Desktop Navigation */}
