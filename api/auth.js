@@ -110,16 +110,22 @@ async function handleLogin(req, res, method) {
     const isDevelopment = process.env.NODE_ENV === 'development' ||
                          req.headers.host?.includes('localhost');
 
-    // TODO: Send email with magic link using email service (SendGrid, AWS SES, etc.)
-    // const magicLink = `${req.headers.origin}/admin?token=${token}`;
+    // Generate magic link
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || 'https://uphousetw.vercel.app';
+    const magicLink = `${origin}/admin?token=${token}`;
+
+    // TODO: Send email with magic link using email service (SendGrid, AWS SES, Resend, etc.)
+    // For now, returning the link in response for testing
     // await sendEmail(email, magicLink);
 
     return res.status(200).json({
       success: true,
-      message: 'Magic link sent to your email',
-      // In development, return the token directly for easy testing
+      message: isDevelopment ? 'Development mode: Use the link below' : 'Magic link generated (email service not configured yet)',
+      // Temporary: show link in response until email service is set up
+      magicLink: magicLink,
       developmentToken: isDevelopment ? token : undefined,
-      isDevelopment: isDevelopment
+      isDevelopment: isDevelopment,
+      note: 'Email service not configured. Copy the magic link above to log in.'
     });
   }
 

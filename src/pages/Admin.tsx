@@ -108,7 +108,7 @@ export default function Admin() {
 function AdminLogin({ setUser }: { setUser: (user: User | null) => void }) {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState<string | React.ReactNode>('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const navigate = useNavigate();
 
@@ -183,6 +183,23 @@ function AdminLogin({ setUser }: { setUser: (user: User | null) => void }) {
         setUser({ email, role: 'admin' });
         navigate('/admin/dashboard');
         setMessage('開發模式：自動登入成功');
+        setMessageType('success');
+      } else if (data.magicLink) {
+        // Show magic link for user to copy (temporary until email is configured)
+        setMessage(
+          <div>
+            <p className="font-medium mb-2">請點擊以下連結登入：</p>
+            <a
+              href={data.magicLink}
+              className="text-primary-600 underline break-all hover:text-primary-700"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {data.magicLink}
+            </a>
+            <p className="text-xs mt-2 text-gray-500">{data.note}</p>
+          </div>
+        );
         setMessageType('success');
       } else if (data.success) {
         setMessage('Magic Link 已發送至您的信箱，請檢查收件匣');
