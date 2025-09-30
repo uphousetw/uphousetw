@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Environment Check</title>
+</head>
+<body>
+  <h1>Cloudinary Environment Check</h1>
+  <div id="result"></div>
+  <script type="module">
+    const envVars = {
+      VITE_CLOUDINARY_CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+      VITE_CLOUDINARY_UPLOAD_PRESET: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+      VITE_API_URL: import.meta.env.VITE_API_URL
+    };
+
+    document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(envVars, null, 2) + '</pre>';
+    console.log('Environment Variables:', envVars);
+  </script>
+</body>
+</html>
