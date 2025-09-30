@@ -17,59 +17,6 @@ export interface UploadOptions {
   quality?: number;
 }
 
-// Resize image client-side to reduce file size
-const resizeImage = async (
-  file: File,
-  maxWidth: number = 1920,
-  maxHeight: number = 1080,
-  quality: number = 0.8
-): Promise<File> => {
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
-    const img = new Image();
-
-    img.onload = () => {
-      // Calculate new dimensions
-      let { width, height } = img;
-
-      if (width > maxWidth || height > maxHeight) {
-        const aspectRatio = width / height;
-
-        if (width > height) {
-          width = Math.min(width, maxWidth);
-          height = width / aspectRatio;
-        } else {
-          height = Math.min(height, maxHeight);
-          width = height * aspectRatio;
-        }
-      }
-
-      // Set canvas dimensions
-      canvas.width = width;
-      canvas.height = height;
-
-      // Draw resized image
-      ctx.drawImage(img, 0, 0, width, height);
-
-      // Convert to blob with quality compression
-      canvas.toBlob(
-        (blob) => {
-          const resizedFile = new File([blob!], file.name, {
-            type: file.type,
-            lastModified: Date.now()
-          });
-          resolve(resizedFile);
-        },
-        file.type,
-        quality
-      );
-    };
-
-    img.src = URL.createObjectURL(file);
-  });
-};
-
 // Upload image to Cloudinary - simple approach that was working before
 export const uploadImage = async (
   file: File,
