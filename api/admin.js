@@ -176,14 +176,25 @@ async function handleProjects(req, res, projectId) {
       if (!projectId || projectId === 'projects') {
         return res.status(400).json({ error: 'Project ID required for update' });
       }
-      const updatedProject = await updateProject(projectId, req.body);
-      if (!updatedProject) {
-        return res.status(404).json({ error: 'Project not found' });
+      try {
+        console.log('🔄 Updating project:', projectId, 'with data:', req.body);
+        const updatedProject = await updateProject(projectId, req.body);
+        if (!updatedProject) {
+          console.error('❌ Project not found:', projectId);
+          return res.status(404).json({ error: 'Project not found' });
+        }
+        console.log('✅ Project updated successfully:', projectId);
+        return res.status(200).json({
+          message: 'Project updated successfully',
+          project: updatedProject
+        });
+      } catch (error) {
+        console.error('❌ Error updating project:', error);
+        return res.status(500).json({
+          error: 'Failed to update project',
+          details: error.message
+        });
       }
-      return res.status(200).json({
-        message: 'Project updated successfully',
-        project: updatedProject
-      });
 
     case 'DELETE':
       if (!projectId || projectId === 'projects') {
