@@ -15,7 +15,12 @@
       "Bash(PORT=3003 npm run dev:api)",
       "Bash(PORT=3004 npm run dev:api)",
       "Bash(echo:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebFetch(domain:uphousetw.vercel.app)",
+      "Bash(git rm:*)",
+      "Bash(npm run build:*)",
+      "Bash(PORT=3002 node dev-server.js)",
+      "Bash(vercel env:*)"
     ],
     "deny": [],
     "ask": []
