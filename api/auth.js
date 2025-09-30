@@ -81,8 +81,25 @@ async function handleLogin(req, res) {
 
   // Check if email is in admin whitelist
   const whitelist = readWhitelist();
+
+  // Debug logging
+  console.log('🔍 Login attempt:', {
+    email,
+    whitelist,
+    envSet: !!process.env.ADMIN_EMAILS,
+    envValue: process.env.ADMIN_EMAILS ? '[REDACTED]' : 'not set',
+    isMatch: whitelist.includes(email)
+  });
+
   if (!whitelist.includes(email)) {
-    return res.status(403).json({ error: 'Access denied. Your email is not in the admin whitelist.' });
+    return res.status(403).json({
+      error: 'Access denied. Your email is not in the admin whitelist.',
+      debug: {
+        submittedEmail: email,
+        whitelistCount: whitelist.length,
+        envConfigured: !!process.env.ADMIN_EMAILS
+      }
+    });
   }
 
   if (method === 'magic-link') {
