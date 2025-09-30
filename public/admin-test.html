@@ -115,8 +115,16 @@
     function autoFillToken() {
       const token = localStorage.getItem('admin_token');
       if (token) {
-        document.getElementById('authToken').value = token;
-        alert('✅ Token auto-filled successfully!');
+        // Clean token - remove any non-ASCII characters and trim
+        const cleanToken = token.trim().replace(/[^\x00-\x7F]/g, '');
+        document.getElementById('authToken').value = cleanToken;
+
+        // Validate token format
+        if (!cleanToken.match(/^[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+$/)) {
+          alert('⚠️ Warning: Token format looks invalid. Make sure you\'re logged in to admin panel.');
+        } else {
+          alert('✅ Token auto-filled successfully!');
+        }
       } else {
         alert('❌ No token found. Please login to admin panel first at /admin');
       }
@@ -223,12 +231,20 @@
         body: JSON.stringify(testData)
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(`Contact submission failed: ${error.message || response.statusText}`);
+        // Show detailed error information
+        const errorDetails = {
+          status: response.status,
+          statusText: response.statusText,
+          error: result.error,
+          message: result.message,
+          details: result.details
+        };
+        throw new Error(`Contact submission failed:\n${JSON.stringify(errorDetails, null, 2)}`);
       }
 
-      const result = await response.json();
       generatedContactId = result.id;
 
       if (!result.success || !result.id) {
