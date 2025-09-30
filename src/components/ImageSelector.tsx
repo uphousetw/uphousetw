@@ -35,7 +35,7 @@ export default function ImageSelector({ onSelect, onClose, currentImageUrl }: Im
       }
 
       const data = await response.json();
-      setImages(data);
+      setImages(data.images || []);
     } catch (error) {
       console.error('Failed to fetch images:', error);
       setError('載入圖片失敗');

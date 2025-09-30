@@ -25,104 +25,57 @@ const importHandler = async (handlerPath) => {
   }
 };
 
-// Route handlers
-app.all('/api/about-public', async (req, res) => {
-  const handler = await importHandler('./api/about-public.js');
+// Condensed API Route handlers (3 endpoints)
+
+// Admin API - All admin operations
+app.all('/api/admin', async (req, res) => {
+  const handler = await importHandler('./api/admin.js');
   if (handler) {
     await handler(req, res);
   } else {
-    res.status(500).json({ error: 'Handler not found' });
+    res.status(500).json({ error: 'Admin handler not found' });
   }
 });
 
-app.all('/api/about', async (req, res) => {
-  const handler = await importHandler('./api/about.js');
+// Public API - All public data and contact submissions
+app.all('/api/public', async (req, res) => {
+  const handler = await importHandler('./api/public.js');
   if (handler) {
     await handler(req, res);
   } else {
-    res.status(500).json({ error: 'Handler not found' });
+    res.status(500).json({ error: 'Public handler not found' });
   }
 });
 
-app.all('/api/projects-public', async (req, res) => {
-  const handler = await importHandler('./api/projects-public.js');
+// Auth API - Authentication and OAuth
+app.all('/api/auth', async (req, res) => {
+  const handler = await importHandler('./api/auth.js');
   if (handler) {
     await handler(req, res);
   } else {
-    res.status(500).json({ error: 'Handler not found' });
+    res.status(500).json({ error: 'Auth handler not found' });
   }
-});
-
-app.all('/api/projects', async (req, res) => {
-  const handler = await importHandler('./api/projects.js');
-  if (handler) {
-    await handler(req, res);
-  } else {
-    res.status(500).json({ error: 'Handler not found' });
-  }
-});
-
-app.all('/api/contacts', async (req, res) => {
-  const handler = await importHandler('./api/contacts.js');
-  if (handler) {
-    await handler(req, res);
-  } else {
-    res.status(500).json({ error: 'Handler not found' });
-  }
-});
-
-app.all('/api/contact', async (req, res) => {
-  const handler = await importHandler('./api/contact.js');
-  if (handler) {
-    await handler(req, res);
-  } else {
-    res.status(500).json({ error: 'Handler not found' });
-  }
-});
-
-app.all('/api/images', async (req, res) => {
-  const handler = await importHandler('./api/images.js');
-  if (handler) {
-    await handler(req, res);
-  } else {
-    res.status(500).json({ error: 'Handler not found' });
-  }
-});
-
-app.all('/api/images/delete', async (req, res) => {
-  const handler = await importHandler('./api/images/delete.js');
-  if (handler) {
-    await handler(req, res);
-  } else {
-    res.status(500).json({ error: 'Handler not found' });
-  }
-});
-
-// Site configuration endpoint
-app.get('/api/site-config', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.json({
-    config: {
-      logo: "uphouse/logo/icon_uphouse",
-      favicon: "uphouse/logo/favicon",
-      companyName: "向上建設",
-      gallery: [],
-      updatedAt: new Date().toISOString()
-    }
-  });
 });
 
 app.listen(PORT, () => {
   console.log(`🚀 Development API server running on http://localhost:${PORT}`);
-  console.log(`📡 API endpoints available at http://localhost:${PORT}/api/*`);
-  console.log('📋 Registered routes:');
-  console.log('  - /api/about-public');
-  console.log('  - /api/about');
-  console.log('  - /api/projects-public');
-  console.log('  - /api/projects');
-  console.log('  - /api/contacts');
-  console.log('  - /api/contact');
-  console.log('  - /api/images');
-  console.log('  - /api/images/delete');
-  console.log('  - /api/site-config');
+  console.log(`📡 Condensed API endpoints available at http://localhost:${PORT}/api/*`);
+  console.log('📋 Registered routes (3 consolidated endpoints):');
+  console.log('  🔒 /api/admin    - All admin operations (auth required)');
+  console.log('      • ?resource=projects&id=123');
+  console.log('      • ?resource=contacts&id=456');
+  console.log('      • ?resource=about');
+  console.log('      • ?resource=config');
+  console.log('      • ?resource=images&id=789');
+  console.log('  🌐 /api/public   - Public data & contact submissions');
+  console.log('      • ?resource=projects&slug=project-name');
+  console.log('      • ?resource=about');
+  console.log('      • ?resource=contact (POST)');
+  console.log('  🔐 /api/auth     - Authentication & OAuth');
+  console.log('      • ?method=magic-link');
+  console.log('      • ?method=google');
+  console.log('      • ?method=verify');
+  console.log('      • ?method=logout');
+  console.log('');
+  console.log('✨ Condensed from 15 to 3 endpoints for better maintainability!');
 });

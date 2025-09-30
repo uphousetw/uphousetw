@@ -14,7 +14,7 @@ export default function Header() {
     // Fetch site configuration including logo
     const fetchSiteConfig = async () => {
       try {
-        const response = await fetch('/api/site-config');
+        const response = await fetch('/api/public?resource=config');
         if (response.ok) {
           const data = await response.json();
           setSiteConfig(data.config);

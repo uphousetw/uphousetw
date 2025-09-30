@@ -20,7 +20,7 @@ export default function ProjectDetail() {
       setLoading(true);
 
       try {
-        const response = await fetch(`/api/projects-public?slug=${slug}`);
+        const response = await fetch(`/api/public?resource=projects&slug=${slug}`);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
@@ -227,7 +227,7 @@ export default function ProjectDetail() {
                   to="/contact"
                   className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg text-center font-medium hover:bg-primary-700 transition-colors block"
                 >
-                  諮詢類似建案
+                  諮詢建案
                 </Link>
               </div>
             </motion.div>

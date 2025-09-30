@@ -81,7 +81,7 @@ export function AdminGallery({ user }: { user: User }) {
       }
 
       const data = await response.json();
-      setImages(data);
+      setImages(data.images || []);
     } catch (error) {
       console.error('Failed to fetch images:', error);
       setError('載入圖片失敗');
@@ -110,10 +110,10 @@ export function AdminGallery({ user }: { user: User }) {
         throw new Error(`Failed to save image: ${response.statusText}`);
       }
 
-      const savedImage = await response.json();
+      const data = await response.json();
 
       // Update local state
-      setImages(prev => [...prev, savedImage]);
+      setImages(prev => [...prev, data.image]);
 
     } catch (error) {
       console.error('Failed to save image:', error);

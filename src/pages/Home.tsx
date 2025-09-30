@@ -18,12 +18,12 @@ export default function Home() {
   const services = [
     {
       title: '住宅建設',
-      description: '提供透天、華廈、電梯大樓等多樣化住宅建設服務',
+      description: '苗栗高鐵特區美宅',
       icon: <HomeIcon size={48} />
     },
     {
       title: '品質保證',
-      description: '嚴格的品管流程，確保每個建案都達到最高標準',
+      description: '嚴格的品管流程，確保每個建案都達最高標準',
       icon: <Award size={48} />
     },
     {
@@ -36,7 +36,7 @@ export default function Home() {
   useEffect(() => {
     const fetchFeaturedProjects = async () => {
       try {
-        const response = await fetch('/api/projects-public');
+        const response = await fetch('/api/public?resource=projects');
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }

@@ -175,10 +175,10 @@ function AdminLogin({ setUser }: { setUser: (user: User | null) => void }) {
     setMessage('');
 
     try {
-      const response = await fetch('/api/auth', {
+      const response = await fetch('/api/auth?method=magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, method: 'magic-link' })
+        body: JSON.stringify({ email })
       });
 
       if (!response.ok) {
@@ -344,13 +344,13 @@ function AdminDashboard({ user, setUser }: { user: User; setUser: (user: User | 
       if (!token) return;
 
       // Fetch projects count
-      const projectsResponse = await fetch('/api/projects', {
+      const projectsResponse = await fetch('/api/admin?resource=projects', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const projectsData = projectsResponse.ok ? await projectsResponse.json() : { projects: [] };
 
       // Fetch contacts count
-      const contactsResponse = await fetch('/api/contacts', {
+      const contactsResponse = await fetch('/api/admin?resource=contacts', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const contactsData = contactsResponse.ok ? await contactsResponse.json() : { contacts: [] };
@@ -588,7 +588,7 @@ function AdminProjects({ user }: { user: User }) {
     setDeleting(projectId);
     try {
       const token = localStorage.getItem('admin_token');
-      const response = await fetch(`/api/projects?id=${projectId}`, {
+      const response = await fetch(`/api/admin?resource=projects&id=${projectId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1081,7 +1081,7 @@ function AdminContacts({ user }: { user: User }) {
     setDeleting(contactId);
     try {
       const token = localStorage.getItem('admin_token');
-      const response = await fetch(`/api/contacts?id=${contactId}`, {
+      const response = await fetch(`/api/admin?resource=contacts&id=${contactId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1107,7 +1107,7 @@ function AdminContacts({ user }: { user: User }) {
     setUpdating(contactId);
     try {
       const token = localStorage.getItem('admin_token');
-      const response = await fetch(`/api/contacts?id=${contactId}`, {
+      const response = await fetch(`/api/admin?resource=contacts&id=${contactId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1142,7 +1142,7 @@ function AdminContacts({ user }: { user: User }) {
       const updatePromises = contacts
         .filter(c => c.status === 'new')
         .map(contact =>
-          fetch(`/api/contacts?id=${contact.id}`, {
+          fetch(`/api/admin?resource=contacts&id=${contact.id}`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${token}`,

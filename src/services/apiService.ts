@@ -53,28 +53,28 @@ class ApiService {
    * Get all projects for public display
    */
   async getPublicProjects(): Promise<{ projects: Project[]; total: number }> {
-    return this.makeRequest('projects-public');
+    return this.makeRequest('public?resource=projects');
   }
 
   /**
    * Get single project by slug for public display
    */
   async getPublicProject(slug: string): Promise<{ project: Project }> {
-    return this.makeRequest(`projects-public?slug=${encodeURIComponent(slug)}`);
+    return this.makeRequest(`public?resource=projects&slug=${encodeURIComponent(slug)}`);
   }
 
   /**
    * Get about data for public display
    */
   async getPublicAbout(): Promise<{ about: AboutUs }> {
-    return this.makeRequest('about-public');
+    return this.makeRequest('public?resource=about');
   }
 
   /**
    * Submit contact form
    */
   async submitContact(data: Omit<ContactMessage, 'id' | 'status' | 'createdAt' | 'updatedAt'>): Promise<{ message: string }> {
-    return this.makeRequest('contact', {
+    return this.makeRequest('public?resource=contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -87,7 +87,7 @@ class ApiService {
    * Get all projects for admin management
    */
   async getAdminProjects(token: string): Promise<{ projects: Project[]; total: number }> {
-    return this.makeRequest('projects', {
+    return this.makeRequest('admin?resource=projects', {
       headers: { Authorization: `Bearer ${token}` },
     });
   }
@@ -96,7 +96,7 @@ class ApiService {
    * Create new project
    */
   async createProject(token: string, data: Omit<Project, 'id' | 'slug' | 'createdAt' | 'updatedAt'>): Promise<{ project: Project }> {
-    return this.makeRequest('projects', {
+    return this.makeRequest('admin?resource=projects', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ class ApiService {
    * Update existing project
    */
   async updateProject(token: string, id: string, data: Partial<Project>): Promise<{ project: Project }> {
-    return this.makeRequest(`projects?id=${id}`, {
+    return this.makeRequest(`admin?resource=projects&id=${id}`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -124,7 +124,7 @@ class ApiService {
    * Delete project
    */
   async deleteProject(token: string, id: string): Promise<{ message: string }> {
-    return this.makeRequest(`projects?id=${id}`, {
+    return this.makeRequest(`admin?resource=projects&id=${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -134,7 +134,7 @@ class ApiService {
    * Get about data for admin editing
    */
   async getAdminAbout(token: string): Promise<{ about: AboutUs }> {
-    return this.makeRequest('about', {
+    return this.makeRequest('admin?resource=about', {
       headers: { Authorization: `Bearer ${token}` },
     });
   }
@@ -143,7 +143,7 @@ class ApiService {
    * Update about data
    */
   async updateAbout(token: string, data: Partial<AboutUs>): Promise<{ about: AboutUs }> {
-    return this.makeRequest('about', {
+    return this.makeRequest('admin?resource=about', {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -157,7 +157,7 @@ class ApiService {
    * Get all contact messages
    */
   async getContacts(token: string): Promise<{ contacts: ContactMessage[]; total: number }> {
-    return this.makeRequest('contacts', {
+    return this.makeRequest('admin?resource=contacts', {
       headers: { Authorization: `Bearer ${token}` },
     });
   }
@@ -166,7 +166,7 @@ class ApiService {
    * Update contact message status
    */
   async updateContact(token: string, id: string, data: { status: string }): Promise<{ contact: ContactMessage }> {
-    return this.makeRequest(`contacts/${id}`, {
+    return this.makeRequest(`admin?resource=contacts&id=${id}`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -180,7 +180,7 @@ class ApiService {
    * Delete contact message
    */
   async deleteContact(token: string, id: string): Promise<{ message: string }> {
-    return this.makeRequest(`contacts/${id}`, {
+    return this.makeRequest(`admin?resource=contacts&id=${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -190,7 +190,7 @@ class ApiService {
    * Get site configuration
    */
   async getSiteConfig(token: string): Promise<{ config: SiteConfig }> {
-    return this.makeRequest('site-config', {
+    return this.makeRequest('admin?resource=config', {
       headers: { Authorization: `Bearer ${token}` },
     });
   }
@@ -199,7 +199,7 @@ class ApiService {
    * Update site configuration
    */
   async updateSiteConfig(token: string, data: Partial<SiteConfig>): Promise<{ config: SiteConfig }> {
-    return this.makeRequest('site-config', {
+    return this.makeRequest('admin?resource=config', {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,

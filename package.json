@@ -9,7 +9,12 @@
     "dev:full": "npm run dev:api & npm run dev",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "jest",
+    "test:api": "node tests/api-qa-suite.js",
+    "test:frontend": "jest tests/frontend-integration.test.js",
+    "test:backend": "jest tests/backend-unit.test.js",
+    "test:all": "node tests/run-tests.js"
   },
   "dependencies": {
     "@cloudinary/react": "^1.14.3",

@@ -69,11 +69,17 @@ export const apiRequest = async (
   }
 };
 
-// Specific API methods for images
+// Specific API methods for images (using admin endpoint)
 export const imageApi = {
   // Get all images
   getAll: async (): Promise<Response> => {
-    return apiRequest('images');
+    const token = localStorage.getItem('admin_token');
+    return apiRequest('admin?resource=images', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
   },
 
   // Create new image
@@ -83,23 +89,38 @@ export const imageApi = {
     description?: string;
     category?: string;
   }): Promise<Response> => {
-    return apiRequest('images', {
+    const token = localStorage.getItem('admin_token');
+    return apiRequest('admin?resource=images', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(imageData),
     });
   },
 
   // Delete image
   delete: async (imageId: string): Promise<Response> => {
-    return apiRequest(`images?id=${imageId}`, {
+    const token = localStorage.getItem('admin_token');
+    return apiRequest(`admin?resource=images&id=${imageId}`, {
       method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
     });
   },
 
   // Update image
   update: async (imageId: string, imageData: any): Promise<Response> => {
-    return apiRequest(`images?id=${imageId}`, {
+    const token = localStorage.getItem('admin_token');
+    return apiRequest(`admin?resource=images&id=${imageId}`, {
       method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(imageData),
     });
   },

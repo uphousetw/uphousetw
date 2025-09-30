@@ -15,7 +15,7 @@ export default function Projects() {
     // Fetch projects from API
     const fetchProjects = async () => {
       try {
-        const response = await fetch('/api/projects-public');
+        const response = await fetch('/api/public?resource=projects');
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }

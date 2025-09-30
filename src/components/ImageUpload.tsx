@@ -50,8 +50,10 @@ export default function ImageUpload({
       // Upload to Cloudinary
       const result = await uploadImage(file, options);
 
-      // Set the uploaded image as preview (using Cloudinary URL)
-      setPreview(result.public_id);
+      // Set the uploaded image as preview (using Cloudinary secure_url)
+      console.log('Upload result:', result);
+      console.log('Using secure_url for preview:', result.secure_url);
+      setPreview(result.secure_url);
 
       // Call the onUpload callback
       onUpload(result);
@@ -123,9 +125,17 @@ export default function ImageUpload({
         {preview ? (
           <div className="relative">
             <img
-              src={preview.startsWith('uphouse/') ? getCloudinaryUrl(preview) : preview}
+              src={(() => {
+                const imageUrl = preview.startsWith('uphouse/') ? getCloudinaryUrl(preview) : preview;
+                console.log('Displaying image - preview:', preview, 'final URL:', imageUrl);
+                return imageUrl;
+              })()}
               alt="Preview"
               className="max-w-full h-32 object-cover mx-auto rounded"
+              onError={(e) => {
+                console.error('Image load error:', e);
+                console.error('Failed URL:', (e.target as HTMLImageElement).src);
+              }}
             />
             {!uploading && (
               <button

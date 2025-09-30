@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cloudinary Upload Test</title>
+</head>
+<body>
+    <h2>Cloudinary Upload Test</h2>
+    <input type="file" id="fileInput" accept="image/*">
+    <button onclick="testUpload()">Test Upload</button>
+    <div id="result"></div>
+
+    <script>
+        async function testUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const resultDiv = document.getElementById('result');
+
+            if (!fileInput.files[0]) {
+                resultDiv.innerHTML = 'Please select a file first';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            resultDiv.innerHTML = 'Uploading...';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', 'Uphouse');
+                formData.append('folder', 'uphouse/gallery');
+
+                const response = await fetch('https://api.cloudinary.com/v1_1/dpqbbiuef/image/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <h3>Success!</h3>
+                        <p>Public ID: ${result.public_id}</p>
+                        <p>Secure URL: ${result.secure_url}</p>
+                        <img src="${result.secure_url}" style="max-width: 300px;">
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h3>Error:</h3>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>Network Error:</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
