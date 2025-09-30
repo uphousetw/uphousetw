@@ -120,6 +120,8 @@ export default function ImageUpload({
           onChange={(e) => handleFileSelect(e.target.files)}
           className="hidden"
           disabled={uploading}
+          aria-label={label}
+          title={label}
         />
 
         {preview ? (
