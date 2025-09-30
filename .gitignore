@@ -47,8 +47,8 @@ config/secrets.json
 # Vercel
 .vercel
 
-# Content data (sensitive)
-/api/data/*.json
+# Content data (keep whitelist private, commit other data files)
+/api/data/admin-whitelist.json
 
 # Build
 build/

@@ -3,9 +3,32 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { readFileSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load environment variables from .env file
+try {
+  const envFile = readFileSync(path.join(__dirname, '.env'), 'utf-8');
+  const lines = envFile.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#')) {
+      const match = trimmed.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        const value = match[2].trim();
+        if (!process.env[key]) {
+          process.env[key] = value;
+        }
+      }
+    }
+  }
+  console.log('✅ Environment variables loaded from .env');
+} catch (error) {
+  console.log('⚠️  No .env file found, using system environment variables');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3002;

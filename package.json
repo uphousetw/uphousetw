@@ -14,7 +14,8 @@
     "test:api": "node tests/api-qa-suite.js",
     "test:frontend": "jest tests/frontend-integration.test.js",
     "test:backend": "jest tests/backend-unit.test.js",
-    "test:all": "node tests/run-tests.js"
+    "test:all": "node tests/run-tests.js",
+    "migrate:mongodb": "node scripts/migrate-to-mongodb.js"
   },
   "dependencies": {
     "@cloudinary/react": "^1.14.3",
@@ -27,6 +28,7 @@
     "google-auth-library": "^10.3.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
+    "mongodb": "^6.20.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.15.0"

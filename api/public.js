@@ -1,7 +1,7 @@
 // Consolidated public API endpoint - handles all public data requests and contact submissions
-import { getAllProjects, getProjectBySlug } from './data/projects.js';
-import { getAboutData } from './data/about.js';
-import { addContact } from './data/contacts.js';
+import { getAllProjects, getProjectBySlug } from './data/projects-mongodb.js';
+import { getAboutData } from './data/about-mongodb.js';
+import { addContact } from './data/contacts-mongodb.js';
 
 export default async function handler(req, res) {
   // CORS headers
