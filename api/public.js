@@ -2,6 +2,7 @@
 import { getAllProjects, getProjectBySlug } from '../lib/data/projects-mongodb.js';
 import { getAboutData } from '../lib/data/about-mongodb.js';
 import { addContact } from '../lib/data/contacts-mongodb.js';
+import { getSiteConfig } from '../lib/data/config-mongodb.js';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -32,7 +33,7 @@ export default async function handler(req, res) {
     }
 
     if (!resource) {
-      return res.status(400).json({ error: 'Resource type required (projects, about)' });
+      return res.status(400).json({ error: 'Resource type required (projects, about, config)' });
     }
 
     switch (resource) {
@@ -40,6 +41,8 @@ export default async function handler(req, res) {
         return await handlePublicProjects(req, res, slug);
       case 'about':
         return await handlePublicAbout(req, res);
+      case 'config':
+        return await handlePublicConfig(req, res);
       default:
         return res.status(400).json({ error: 'Invalid resource type' });
     }
@@ -71,6 +74,11 @@ async function handlePublicProjects(req, res, slug) {
 async function handlePublicAbout(req, res) {
   const aboutData = await getAboutData();
   return res.status(200).json({ about: aboutData });
+}
+
+async function handlePublicConfig(req, res) {
+  const config = await getSiteConfig();
+  return res.status(200).json({ config });
 }
 
 async function handleContactSubmission(req, res) {
@@ -114,10 +122,12 @@ async function handleContactSubmission(req, res) {
 
   } catch (error) {
     console.error('Contact form error:', error);
+    console.error('Error details:', error.message, error.stack);
 
     return res.status(500).json({
       error: 'Internal server error',
-      message: '系統錯誤，請稍後再試'
+      message: '系統錯誤，請稍後再試',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 }

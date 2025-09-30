@@ -20,6 +20,8 @@ export default function Contact() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [focusedFields, setFocusedFields] = useState<Set<string>>(new Set());
 
   const defaultValues = {
@@ -88,7 +90,11 @@ export default function Contact() {
 
     } catch (error) {
       console.error('Error submitting form:', error);
-      // You could set an error state here to show error message to user
+      setShowError(true);
+      setErrorMessage(error instanceof Error ? error.message : '送出失敗，請稍後再試');
+
+      // Hide error message after 5 seconds
+      setTimeout(() => setShowError(false), 5000);
     } finally {
       setIsSubmitting(false);
     }
@@ -241,6 +247,26 @@ export default function Contact() {
                       <div>
                         <p className="font-medium">感謝您的來信！</p>
                         <p className="text-sm text-green-700">我們會盡快與您聯絡，通常在 24 小時內回覆。</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Error Message */}
+                {showError && (
+                  <motion.div
+                    className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mt-4"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      <div>
+                        <p className="font-medium">送出失敗</p>
+                        <p className="text-sm text-red-700">{errorMessage}</p>
                       </div>
                     </div>
                   </motion.div>
