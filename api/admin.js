@@ -5,104 +5,18 @@ import {
   addProject,
   updateProject,
   deleteProject
-} from '../lib/data/projects.js';
+} from '../lib/data/projects-mongodb.js';
 import {
   getAllContacts,
   getContactById,
   updateContact,
   deleteContact
-} from '../lib/data/contacts.js';
-import { getAboutData, updateAboutData } from '../lib/data/about.js';
+} from '../lib/data/contacts-mongodb.js';
+import { getAboutData, updateAboutData } from '../lib/data/about-mongodb.js';
+import { getSiteConfig, updateSiteConfig } from '../lib/data/config-mongodb.js';
+import { getAllImages, getImageById, addImage, updateImage, deleteImage } from '../lib/data/images-mongodb.js';
 import { requireAuth, logAdminAction } from '../lib/utils/auth.js';
 import { v2 as cloudinary } from 'cloudinary';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-import path from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-// Site config functions
-const siteConfigPath = path.join(__dirname, 'data', 'site-config.json');
-const defaultSiteConfig = {
-  logo: "uphouse/logo/icon_uphouse",
-  favicon: "uphouse/logo/favicon",
-  companyName: "向上建設",
-  gallery: [],
-  updatedAt: new Date().toISOString()
-};
-
-function readSiteConfig() {
-  try {
-    if (!fs.existsSync(siteConfigPath)) {
-      const dataDir = path.dirname(siteConfigPath);
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-      }
-      fs.writeFileSync(siteConfigPath, JSON.stringify(defaultSiteConfig, null, 2));
-    }
-    const data = fs.readFileSync(siteConfigPath, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading site config:', error);
-    return defaultSiteConfig;
-  }
-}
-
-function writeSiteConfig(config) {
-  try {
-    const updatedConfig = {
-      ...config,
-      updatedAt: new Date().toISOString()
-    };
-    fs.writeFileSync(siteConfigPath, JSON.stringify(updatedConfig, null, 2));
-    return updatedConfig;
-  } catch (error) {
-    console.error('Error writing site config:', error);
-    throw error;
-  }
-}
-
-// Image management functions
-const IMAGES_FILE = path.join(__dirname, 'data', 'images.json');
-
-// Ensure images data directory exists
-const imagesDataDir = path.dirname(IMAGES_FILE);
-if (!fs.existsSync(imagesDataDir)) {
-  fs.mkdirSync(imagesDataDir, { recursive: true });
-}
-
-// Initialize images file if it doesn't exist
-if (!fs.existsSync(IMAGES_FILE)) {
-  fs.writeFileSync(IMAGES_FILE, JSON.stringify([], null, 2));
-}
-
-const readImages = () => {
-  try {
-    const data = fs.readFileSync(IMAGES_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading images file:', error);
-    return [];
-  }
-};
-
-const writeImages = (images) => {
-  try {
-    fs.writeFileSync(IMAGES_FILE, JSON.stringify(images, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error writing images file:', error);
-    return false;
-  }
-};
 
 export default async function handler(req, res) {
   // CORS headers
@@ -300,27 +214,29 @@ async function handleConfig(req, res) {
   switch (req.method) {
     case 'GET':
       try {
-        const config = readSiteConfig();
+        const config = await getSiteConfig();
         return res.status(200).json({
           config,
           message: 'Site configuration retrieved successfully'
         });
       } catch (error) {
         return res.status(500).json({
-          error: 'Failed to read site configuration'
+          error: 'Failed to read site configuration',
+          details: error.message
         });
       }
 
     case 'PUT':
       try {
-        const updatedConfig = writeSiteConfig(req.body);
+        const updatedConfig = await updateSiteConfig(req.body);
         return res.status(200).json({
           config: updatedConfig,
           message: 'Site configuration updated successfully'
         });
       } catch (error) {
         return res.status(500).json({
-          error: 'Failed to update site configuration'
+          error: 'Failed to update site configuration',
+          details: error.message
         });
       }
 
@@ -345,104 +261,83 @@ async function handleImages(req, res, imageId) {
     return await handleCloudinaryUpload(req, res);
   }
 
-  switch (req.method) {
-    case 'GET':
-      // Get all images or single image
-      if (imageId && imageId !== 'images') {
-        const images = readImages();
-        const image = images.find(img => img.id === imageId);
-        if (!image) {
-          return res.status(404).json({ error: 'Image not found' });
+  try {
+    switch (req.method) {
+      case 'GET':
+        // Get all images or single image
+        if (imageId && imageId !== 'images') {
+          const image = await getImageById(imageId);
+          if (!image) {
+            return res.status(404).json({ error: 'Image not found' });
+          }
+          return res.status(200).json({ image });
+        } else {
+          const images = await getAllImages();
+          return res.status(200).json({ images, total: images.length });
         }
-        return res.status(200).json({ image });
-      } else {
-        const images = readImages();
-        return res.status(200).json({ images, total: images.length });
-      }
 
-    case 'POST':
-      // Add new image metadata
-      const { publicId, title = '', description = '', category = 'gallery' } = req.body;
+      case 'POST':
+        // Add new image metadata
+        const { publicId, title = '', description = '', category = 'gallery', order } = req.body;
 
-      if (!publicId) {
-        return res.status(400).json({ error: 'publicId is required' });
-      }
+        if (!publicId) {
+          return res.status(400).json({ error: 'publicId is required' });
+        }
 
-      const images_post = readImages();
-      const newImage = {
-        id: Date.now().toString(),
-        publicId,
-        title,
-        description,
-        category,
-        order: images_post.length,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+        const images = await getAllImages();
+        const newImage = await addImage({
+          publicId,
+          title,
+          description,
+          category,
+          order: order !== undefined ? order : images.length
+        });
 
-      images_post.push(newImage);
-
-      if (writeImages(images_post)) {
         return res.status(201).json({
           message: 'Image created successfully',
           image: newImage
         });
-      } else {
-        return res.status(500).json({ error: 'Failed to save image' });
-      }
 
-    case 'PUT':
-      // Update image metadata
-      if (!imageId || imageId === 'images') {
-        return res.status(400).json({ error: 'Image ID required for update' });
-      }
+      case 'PUT':
+        // Update image metadata
+        if (!imageId || imageId === 'images') {
+          return res.status(400).json({ error: 'Image ID required for update' });
+        }
 
-      const updateData = req.body;
-      const images_put = readImages();
-      const imageIndex = images_put.findIndex(img => img.id === imageId);
+        const updatedImage = await updateImage(imageId, req.body);
+        if (!updatedImage) {
+          return res.status(404).json({ error: 'Image not found' });
+        }
 
-      if (imageIndex === -1) {
-        return res.status(404).json({ error: 'Image not found' });
-      }
-
-      images_put[imageIndex] = {
-        ...images_put[imageIndex],
-        ...updateData,
-        updatedAt: new Date().toISOString()
-      };
-
-      if (writeImages(images_put)) {
         return res.status(200).json({
           message: 'Image updated successfully',
-          image: images_put[imageIndex]
+          image: updatedImage
         });
-      } else {
-        return res.status(500).json({ error: 'Failed to update image' });
-      }
 
-    case 'DELETE':
-      // Delete image metadata
-      if (!imageId || imageId === 'images') {
-        return res.status(400).json({ error: 'Image ID required for deletion' });
-      }
+      case 'DELETE':
+        // Delete image metadata
+        if (!imageId || imageId === 'images') {
+          return res.status(400).json({ error: 'Image ID required for deletion' });
+        }
 
-      const images_delete = readImages();
-      const filteredImages = images_delete.filter(img => img.id !== imageId);
+        const deletedImage = await deleteImage(imageId);
+        if (!deletedImage) {
+          return res.status(404).json({ error: 'Image not found' });
+        }
 
-      if (filteredImages.length === images_delete.length) {
-        return res.status(404).json({ error: 'Image not found' });
-      }
-
-      if (writeImages(filteredImages)) {
         return res.status(200).json({
           message: 'Image deleted successfully'
         });
-      } else {
-        return res.status(500).json({ error: 'Failed to delete image' });
-      }
 
-    default:
-      return res.status(405).json({ error: 'Method not allowed' });
+      default:
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+  } catch (error) {
+    console.error('Error handling images:', error);
+    return res.status(500).json({
+      error: 'Internal server error',
+      details: error.message
+    });
   }
 }
 
@@ -461,6 +356,13 @@ async function handleCloudinaryDelete(req, res) {
   }
 
   try {
+    // Configure Cloudinary
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+
     // Delete image from Cloudinary
     const result = await cloudinary.uploader.destroy(public_id);
 
@@ -492,6 +394,13 @@ async function handleCloudinaryUpload(req, res) {
   }
 
   try {
+    // Configure Cloudinary
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+
     // For this simplified implementation, we'll expect the file data to be base64 encoded in the request body
     const { fileData, fileName, folder = 'uphouse/gallery' } = req.body;
 
@@ -507,36 +416,27 @@ async function handleCloudinaryUpload(req, res) {
       overwrite: false
     });
 
-    // Save image metadata to local database
-    const images = readImages();
-    const newImage = {
-      id: Date.now().toString(),
+    // Save image metadata to database
+    const images = await getAllImages();
+    const newImage = await addImage({
       publicId: result.public_id,
       title: '',
       description: '',
       category: 'gallery',
-      order: images.length,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+      order: images.length
+    });
 
-    images.push(newImage);
-
-    if (writeImages(images)) {
-      return res.status(200).json({
-        message: 'Image uploaded successfully',
-        result: {
-          public_id: result.public_id,
-          secure_url: result.secure_url,
-          width: result.width,
-          height: result.height,
-          format: result.format
-        },
-        image: newImage
-      });
-    } else {
-      return res.status(500).json({ error: 'Failed to save image metadata' });
-    }
+    return res.status(200).json({
+      message: 'Image uploaded successfully',
+      result: {
+        public_id: result.public_id,
+        secure_url: result.secure_url,
+        width: result.width,
+        height: result.height,
+        format: result.format
+      },
+      image: newImage
+    });
 
   } catch (error) {
     console.error('Image upload error:', error);
