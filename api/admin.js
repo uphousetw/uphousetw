@@ -5,15 +5,15 @@ import {
   addProject,
   updateProject,
   deleteProject
-} from './data/projects.js';
+} from '../lib/data/projects.js';
 import {
   getAllContacts,
   getContactById,
   updateContact,
   deleteContact
-} from './data/contacts.js';
-import { getAboutData, updateAboutData } from './data/about.js';
-import { requireAuth, logAdminAction } from './utils/auth.js';
+} from '../lib/data/contacts.js';
+import { getAboutData, updateAboutData } from '../lib/data/about.js';
+import { requireAuth, logAdminAction } from '../lib/utils/auth.js';
 import { v2 as cloudinary } from 'cloudinary';
 import { fileURLToPath } from 'url';
 import fs from 'fs';

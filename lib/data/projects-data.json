@@ -1,0 +1,59 @@
+[
+  {
+    "id": "5",
+    "slug": "adf--1759112377808",
+    "title": "拾壹間(已完銷)",
+    "category": "華廈",
+    "year": 2025,
+    "location": "新東",
+    "summary": "精緻的11間華廈，坐北朝南帝王向，採光充足、通風明亮。苗栗高鐵特區首購首選。",
+    "description": "坐擁雙鐵生活圈，車程約3分鐘可達高鐵苗栗站及台鐵豐富站。\n同時鄰近國道1號頭屋交流道、國道3號大山後龍交流道、快速道路台72線交通系統。\n",
+    "coverUrl": "https://res.cloudinary.com/dpqbbiuef/image/upload/c_fill,h_600,w_800/q_auto/f_auto/v1/uphouse/gallery/ghhaefqfx7l1bl2fgsdo?_a=DATAiZAAZAA0",
+    "facts": {
+      "地點": "新東",
+      "類別": "華廈",
+      "年份": "2025",
+      "完工日": "2025-12-31"
+    },
+    "createdAt": "2025-09-29T02:19:37.808Z",
+    "updatedAt": "2025-09-30T02:51:57.948Z"
+  },
+  {
+    "id": "6",
+    "slug": "adf--1759112916135",
+    "title": "八宅(熱銷中)",
+    "category": "華廈",
+    "year": 2026,
+    "location": "苗栗縣後龍鎮新東路（栗園米食對面）",
+    "summary": "★5層樓電梯華廈\n★2-3房八席珍藏: 靜享簡約生活\n★全平面車位: 日常進出輕鬆自在",
+    "description": "",
+    "coverUrl": "https://res.cloudinary.com/dpqbbiuef/image/upload/c_fill,h_600,w_800/q_auto/f_auto/v1/uphouse/gallery/hidwifeligkzp8dybsgy?_a=DATAiZAAZAA0",
+    "facts": {
+      "地點": "苗栗縣後龍鎮新東路（栗園米食對面）",
+      "類別": "華廈",
+      "年份": "2026",
+      "完工日": "2026-12-31"
+    },
+    "createdAt": "2025-09-29T02:28:36.135Z",
+    "updatedAt": "2025-09-30T01:30:19.494Z"
+  },
+  {
+    "id": "7",
+    "slug": "sadsf-af--1759113317298",
+    "title": "六埕(未開案)",
+    "category": "透天",
+    "year": 2027,
+    "location": "苗栗縣後龍鎮二張犁段 (近造豐路全家)",
+    "summary": "珍稀六戶: 每戶皆是獨一無二的私藏\n",
+    "description": "★ 珍稀六戶: 每戶皆是獨一無二的私藏\n★ 農+建雙重地貌: 保有生活彈性與未來潛力\n★ 均值80坪: 尺度寬敞、生活更從容\n★ 獨棟雙拼設計: 動線分明、住戶單純、居家隱私高 (封閉型社區)",
+    "coverUrl": "https://res.cloudinary.com/dpqbbiuef/image/upload/c_fill,h_600,w_800/q_auto/f_auto/v1/uphouse/gallery/ref73dzn5awm7ap07s1t?_a=DATAiZAAZAA0",
+    "facts": {
+      "地點": "苗栗縣後龍鎮二張犁段 (近造豐路全家)",
+      "類別": "透天",
+      "年份": "2027",
+      "完工日": "2028-12-31"
+    },
+    "createdAt": "2025-09-29T02:35:17.298Z",
+    "updatedAt": "2025-09-30T01:32:54.603Z"
+  }
+]
