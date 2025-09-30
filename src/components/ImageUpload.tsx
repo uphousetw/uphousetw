@@ -144,6 +144,8 @@ export default function ImageUpload({
                   clearImage();
                 }}
                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                title="清除圖片"
+                aria-label="清除圖片"
               >
                 <X size={16} />
               </button>
