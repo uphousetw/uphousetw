@@ -58,7 +58,7 @@ export default async function handler(req, res) {
     switch (method) {
       case 'magic-link':
       case 'login':
-        return await handleLogin(req, res);
+        return await handleLogin(req, res, method);
       case 'verify':
         return await handleVerify(req, res);
       case 'logout':
@@ -72,12 +72,12 @@ export default async function handler(req, res) {
   }
 }
 
-async function handleLogin(req, res) {
+async function handleLogin(req, res, method) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { email, method } = req.body;
+  const { email } = req.body;
 
   // Check if email is in admin whitelist
   const whitelist = readWhitelist();
