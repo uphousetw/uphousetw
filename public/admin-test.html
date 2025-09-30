@@ -84,8 +84,11 @@
 
     <label for="authToken">Admin Token (JWT):</label>
     <input type="password" id="authToken" placeholder="Paste your JWT token here">
+    <button type="button" onclick="autoFillToken()" style="background: #4caf50; margin: 5px 0;">
+      🔑 Auto-fill Token (if logged in)
+    </button>
     <small style="color: #666; display: block; margin-top: 5px;">
-      Get token from localStorage.admin_token after logging into admin panel
+      Click "Auto-fill Token" if you're already logged into the admin panel, or paste manually
     </small>
 
     <button onclick="runAllTests()">▶️ Run All Tests</button>
@@ -107,6 +110,16 @@
 
     function getToken() {
       return document.getElementById('authToken').value.trim();
+    }
+
+    function autoFillToken() {
+      const token = localStorage.getItem('admin_token');
+      if (token) {
+        document.getElementById('authToken').value = token;
+        alert('✅ Token auto-filled successfully!');
+      } else {
+        alert('❌ No token found. Please login to admin panel first at /admin');
+      }
     }
 
     function clearResults() {
