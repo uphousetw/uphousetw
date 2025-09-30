@@ -13,6 +13,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const WHITELIST_FILE = path.join(__dirname, 'data', 'admin-whitelist.json');
 
 function readWhitelist() {
+  // First, check if environment variable is set (for Vercel/production)
+  if (process.env.ADMIN_EMAILS) {
+    return process.env.ADMIN_EMAILS.split(',').map(email => email.trim());
+  }
+
+  // Fall back to file system (for local development)
   try {
     if (!fs.existsSync(WHITELIST_FILE)) {
       // Create default whitelist file
